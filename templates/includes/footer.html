@@ -1,0 +1,45 @@
+{% load static %}
+<footer class="luxury-footer">
+    <div class="container">
+        <div class="footer-top py-5">
+            <div class="row g-5">
+                <div class="col-lg-4">
+                    <h5 class="footer-brand">ArtisanBid</h5>
+                    <p class="footer-text text-muted">
+                        The world's premier online destination for acquiring exceptional works of art.
+                        Curated auctions. Unrivaled expertise. Global reach.
+                    </p>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <h6 class="footer-heading">Navigate</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'core:home' %}" class="footer-link">Home</a></li>
+                        <li><a href="{% url 'auctions:auction_list' %}" class="footer-link">Auctions</a></li>
+                        <li><a href="{% url 'artworks:artwork_list' %}" class="footer-link">Artworks</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <h6 class="footer-heading">Resources</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="footer-link">How to Buy</a></li>
+                        <li><a href="#" class="footer-link">Consignments</a></li>
+                        <li><a href="#" class="footer-link">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <h6 class="footer-heading">Contact</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="footer-link">hello@artisanbid.com</a></li>
+                        <li><a href="#" class="footer-link">+1 (212) 555‑0199</a></li>
+                    </ul>
+                    <p class="text-muted small mt-3">
+                        Follow us for exclusive previews and auction announcements.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom text-center py-4 border-top border-secondary">
+            <small class="text-muted">&copy; {% now "Y" %} ArtisanBid. All rights reserved.</small>
+        </div>
+    </div>
+</footer>

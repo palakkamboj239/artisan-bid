@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Custom Portraits — ArtisanBid Studio{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/portrait.css' %}" />
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="portrait-hero">
+    <div class="portrait-hero-bg"></div>
+    <div class="portrait-hero-overlay"></div>
+    <div class="container portrait-hero-content">
+        <div class="row min-vh-80 align-items-center">
+            <div class="col-lg-7">
+                <span class="hero-overline">ArtisanBid Studio</span>
+                <h1 class="portrait-hero-title">Custom Portrait<br /><span class="text-gold">Commission</span></h1>
+                <p class="portrait-hero-subtitle">
+                    Transform your cherished moments into timeless works of art.
+                    Our master artisans craft bespoke portraits with unparalleled
+                    attention to detail using premium materials and classic techniques.
+                </p>
+                <div class="d-flex flex-wrap gap-3 mt-4">
+                    <a href="#styles" class="btn btn-gold btn-lg">Explore Styles</a>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="portrait-hero-decoration">
+                    <div class="decoration-ring"></div>
+                    <div class="decoration-ring-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="hero-scroll-indicator">Scroll to explore</div>
+</section>
+
+<!-- Process -->
+<section class="section-padding bg-dark-section">
+    <div class="container">
+        <div class="section-header text-center">
+            <span class="section-overline">How It Works</span>
+            <h2 class="section-title">Your Portrait Journey</h2>
+            <div class="section-divider"></div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="process-card">
+                    <div class="process-number">01</div>
+                    <div class="process-icon">🎨</div>
+                    <h4 class="process-title">Choose Style</h4>
+                    <p class="process-text">Select from pencil color, line art, or charcoal — each with its own unique character.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="process-card">
+                    <div class="process-number">02</div>
+                    <div class="process-icon">📸</div>
+                    <h4 class="process-title">Upload Photo</h4>
+                    <p class="process-text">Share your reference image. Our artists will study every detail before beginning.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="process-card">
+                    <div class="process-number">03</div>
+                    <div class="process-icon">✨</div>
+                    <h4 class="process-title">Artisan Creates</h4>
+                    <p class="process-text">Your portrait is handcrafted by our skilled artisans using premium materials.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="process-card">
+                    <div class="process-number">04</div>
+                    <div class="process-icon">🚚</div>
+                    <h4 class="process-title">Delivered</h4>
+                    <p class="process-text">Framed and shipped to your doorstep, ready to adorn your space.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories -->
+<section class="section-padding" id="styles">
+    <div class="container">
+        <div class="section-header text-center">
+            <span class="section-overline">Our Craft</span>
+            <h2 class="section-title">Portrait Styles</h2>
+            <div class="section-divider"></div>
+            <p class="section-subtitle text-muted">Each style reflects a distinct artistic tradition, meticulously executed by our master artisans.</p>
+        </div>
+        <div class="row g-4">
+            {% for category in categories %}
+            <div class="col-lg-4 col-md-6">
+                <a href="{% url 'portraits:category_detail' slug=category.slug %}" class="text-decoration-none">
+                    <div class="style-card">
+                        <div class="style-card-image">
+                            {% if category.hero_image %}
+                            <img src="{{ category.hero_image.url }}" alt="{{ category.name }}" />
+                            {% else %}
+                            <div class="style-card-placeholder">
+                                <span>{{ category.name|first }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="style-card-overlay"></div>
+                        </div>
+                        <div class="style-card-body">
+                            <h3 class="style-card-title">{{ category.name }}</h3>
+                            <p class="style-card-desc">{{ category.description|truncatewords:20 }}</p>
+                            <div class="style-card-footer">
+                                <span class="style-count">{{ category.products.count }} style{% if category.products.count != 1 %}s{% endif %}</span>
+                                <span class="style-arrow">→</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <div class="empty-state">
+                    <div class="empty-icon">🎨</div>
+                    <h3>Portrait Styles Coming Soon</h3>
+                    <p class="text-muted">Our artisan portrait collection is being prepared. Check back shortly.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+{% if featured_products %}
+<section class="section-padding bg-dark-section">
+    <div class="container">
+        <div class="section-header text-center">
+            <span class="section-overline">Featured</span>
+            <h2 class="section-title">Signature Portraits</h2>
+            <div class="section-divider"></div>
+        </div>
+        <div class="row g-4">
+            {% for product in featured_products %}
+            <div class="col-lg-4 col-md-6">
+                <a href="{% url 'portraits:product_detail' category_slug=product.category.slug product_slug=product.slug %}" class="text-decoration-none">
+                    <div class="product-card">
+                        <div class="product-card-image">
+                            {% if product.sample_image %}
+                            <img src="{{ product.sample_image.url }}" alt="{{ product.name }}" />
+                            {% else %}
+                            <div class="product-card-placeholder">
+                                <span>{{ product.name|first }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="product-card-body">
+                            <span class="product-category">{{ product.category.name }}</span>
+                            <h4 class="product-card-title">{{ product.name }}</h4>
+                            <p class="product-card-desc">{{ product.description|truncatewords:12 }}</p>
+                            <div class="product-card-footer">
+                                <span class="product-price">From ₹{{ product.base_price|floatformat:0 }}</span>
+                                <span class="product-learn">Learn More →</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Sizes Preview -->
+<section class="section-padding">
+    <div class="container">
+        <div class="section-header text-center">
+            <span class="section-overline">Dimensions</span>
+            <h2 class="section-title">Available Sizes</h2>
+            <div class="section-divider"></div>
+        </div>
+        <div class="row g-3">
+            {% for size in sizes %}
+            <div class="col-md-2 col-4">
+                <div class="size-preview-card">
+                    <div class="size-preview-visual">
+                        <div class="size-preview-rect" style="
+                        {% if size.width_cm and size.height_cm %}
+                        aspect-ratio: {{ size.width_cm|floatformat:0 }} / {{ size.height_cm|floatformat:0 }};
+                        {% endif %}
+                        max-width: 80%; margin: 0 auto;
+                        "></div>
+                    </div>
+                    <h5 class="size-preview-name">{{ size.name }}</h5>
+                    {% if size.width_cm and size.height_cm %}
+                    <span class="size-preview-dim">{{ size.width_cm|floatformat:0 }}×{{ size.height_cm|floatformat:0 }} cm</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="portrait-cta">
+    <div class="container text-center">
+        <h2 class="cta-title">Ready to Commission Your Portrait?</h2>
+        <p class="cta-text">Every portrait begins with a conversation. Browse our styles and find the perfect medium for your vision.</p>
+        <div class="mt-4">
+            <a href="#styles" class="btn btn-gold btn-lg">Browse Styles</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

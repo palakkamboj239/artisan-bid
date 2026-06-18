@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard – ArtisanBid{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    {% include "includes/dashboard_sidebar.html" %}
+
+    <!-- Main content -->
+    <main class="dashboard-main">
+        <div class="container-fluid p-4">
+
+            <!-- Welcome card -->
+            <div class="dashboard-welcome mb-4">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h2 class="welcome-title">Welcome back, {{ user.get_short_name|default:user.username }}</h2>
+                        <p class="welcome-text text-muted mb-0">Here's your auction activity overview.</p>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{% url 'auctions:auction_list' %}" class="btn btn-gold btn-sm">Browse Auctions</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-card-body">
+                            <div class="stat-icon">✦</div>
+                            <div class="stat-info">
+                                <h3 class="stat-number">{{ total_bids }}</h3>
+                                <p class="stat-label">Total Bids</p>
+                            </div>
+                        </div>
+                        <div class="stat-card-footer">
+                            <small class="text-muted">All time bidding activity</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-card-body">
+                            <div class="stat-icon">⚜</div>
+                            <div class="stat-info">
+                                <h3 class="stat-number">{{ active_auctions }}</h3>
+                                <p class="stat-label">Active Auctions</p>
+                            </div>
+                        </div>
+                        <div class="stat-card-footer">
+                            <small class="text-muted">Currently participating</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-card-body">
+                            <div class="stat-icon">♛</div>
+                            <div class="stat-info">
+                                <h3 class="stat-number">{{ won_auctions }}</h3>
+                                <p class="stat-label">Won Auctions</p>
+                            </div>
+                        </div>
+                        <div class="stat-card-footer">
+                            <small class="text-muted">Successful purchases</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-card-body">
+                            <div class="stat-icon">❖</div>
+                            <div class="stat-info">
+                                <h3 class="stat-number">{{ watchlist_count }}</h3>
+                                <p class="stat-label">Watchlist</p>
+                            </div>
+                        </div>
+                        <div class="stat-card-footer">
+                            <small class="text-muted">Items you're following</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent activity + quick actions -->
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Recent Activity</h5>
+                        </div>
+                        <div class="dashboard-card-body">
+                            <div class="empty-state text-center py-5">
+                                <div class="empty-icon">◈</div>
+                                <h5 class="text-muted">No recent activity</h5>
+                                <p class="text-muted small">Start bidding to see your activity here.</p>
+                                <a href="{% url 'auctions:auction_list' %}" class="btn btn-outline-gold btn-sm mt-2">
+                                    Browse Auctions
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <h5 class="card-title mb-0">Quick Actions</h5>
+                        </div>
+                        <div class="dashboard-card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'auctions:auction_list' %}" class="btn btn-outline-gold btn-sm text-start">
+                                    Explore Live Auctions →
+                                </a>
+                                <a href="{% url 'artworks:artwork_list' %}" class="btn btn-outline-gold btn-sm text-start">
+                                    Browse Artworks →
+                                </a>
+                                <a href="{% url 'users:edit_profile' %}" class="btn btn-outline-gold btn-sm text-start">
+                                    Edit Profile →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="dash-header">
+    <div class="dash-header-text">
+        <h1>Watchlist</h1>
+        <p>Auctions and artworks you're following.</p>
+    </div>
+</div>
+
+{% if watchlist_items %}
+<div class="watchlist-grid">
+    {% for item in watchlist_items %}
+    <div class="watchlist-card">
+        <div class="watchlist-card-img">
+            {% if item.auction.artwork.primary_image %}
+            <img src="{{ item.auction.artwork.primary_image.url }}" alt="{{ item.auction.auction_title }}" />
+            {% else %}
+            <img src="{% static 'images/placeholder-1.svg' %}" alt="{{ item.auction.auction_title }}" />
+            {% endif %}
+            <button class="watch-remove" data-url="{% url 'auctions:toggle_watch' slug=item.auction.slug %}" data-csrf="{{ csrf_token }}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            </button>
+        </div>
+        <div class="watchlist-card-body">
+            <h5>{{ item.auction.auction_title }}</h5>
+            <div class="watchlist-card-meta">
+                <span class="watchlist-price">${{ item.auction.current_bid|default:item.auction.starting_bid|floatformat:2 }}</span>
+                <span class="watchlist-status status-{{ item.auction.status }}">{{ item.auction.get_status_display }}</span>
+            </div>
+            <div class="watchlist-card-timer" data-end="{{ item.auction.end_time|date:'c' }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span class="timer-text">--</span>
+            </div>
+        </div>
+        <div class="watchlist-card-actions">
+            <a href="{% url 'auctions:auction_room' slug=item.auction.slug %}" class="btn-sm-dash primary">Bid Now</a>
+            <a href="{% url 'auctions:auction_detail' slug=item.auction.slug %}" class="btn-sm-dash">Details</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-dash">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    <h4>Your watchlist is empty</h4>
+    <p>Add auctions to your watchlist to track them here.</p>
+    <a href="{% url 'auctions:auction_list' %}" class="btn-outline-gold-dash">Browse Auctions</a>
+</div>
+{% endif %}
+{% endblock %}

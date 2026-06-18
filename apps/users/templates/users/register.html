@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Register – ArtisanBid{% endblock %}
+
+{% block content %}
+<div class="split-auth">
+    <!-- Left: Artwork banner -->
+    <div class="split-auth-banner">
+        <div class="banner-content">
+            <div class="banner-decoration">✦</div>
+            <h2 class="banner-title">Join the World's<br />Premier Art Auction</h2>
+            <p class="banner-text">
+                Gain access to exclusive auctions, private sales, and a global community of
+                collectors, artists, and connoisseurs.
+            </p>
+            <div class="banner-benefits">
+                <div class="benefit-item">
+                    <span class="benefit-icon">◈</span>
+                    <span>Curated collections from renowned artists</span>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">◈</span>
+                    <span>Real-time bidding with secure transactions</span>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">◈</span>
+                    <span>White-glove customer support</span>
+                </div>
+            </div>
+        </div>
+        <div class="banner-credit">
+            <span>Est. 2025</span>
+        </div>
+    </div>
+
+    <!-- Right: Registration form -->
+    <div class="split-auth-form">
+        <div class="form-card">
+            <div class="form-header">
+                <h3 class="form-title">Create Account</h3>
+                <p class="form-subtitle text-muted">Begin your collecting journey</p>
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <div class="form-floating mb-3">
+                    {{ form.username|as_crispy_field }}
+                </div>
+                <div class="form-floating mb-3">
+                    {{ form.email|as_crispy_field }}
+                </div>
+                <div class="form-floating mb-3">
+                    {{ form.password1|as_crispy_field }}
+                </div>
+                <div class="form-floating mb-3">
+                    {{ form.password2|as_crispy_field }}
+                </div>
+
+                <button type="submit" class="btn btn-gold w-100 btn-submit">
+                    <span class="btn-text">Create Account</span>
+                    <span class="btn-loader" style="display:none;">⟳</span>
+                </button>
+            </form>
+
+            <div class="form-footer">
+                <p class="text-muted">
+                    Already have an account?
+                    <a href="{% url 'users:login' %}" class="auth-link">Login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var form = document.querySelector(".split-auth-form form");
+    if (form) {
+        form.addEventListener("submit", function () {
+            var btn = this.querySelector(".btn-submit");
+            btn.disabled = true;
+            btn.querySelector(".btn-text").textContent = "Creating Account...";
+            btn.querySelector(".btn-loader").style.display = "inline-block";
+        });
+    }
+});
+</script>
+{% endblock %}

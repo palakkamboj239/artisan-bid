@@ -1,0 +1,36 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="dash-header">
+    <div class="dash-header-text">
+        <h1>Notifications</h1>
+        <p>Stay updated on your auction activity.</p>
+    </div>
+</div>
+
+{% if notifications %}
+<div class="notif-list-full">
+    {% for n in notifications %}
+    <div class="notif-full-item {% if not n.read %}unread{% endif %}">
+        <div class="notif-full-icon {{ n.type }}">
+            {% if n.type == 'bid' %}✦{% elif n.type == 'win' %}♛{% elif n.type == 'outbid' %}⚡{% elif n.type == 'ended' %}⏰{% elif n.type == 'sale' %}💰{% else %}◈{% endif %}
+        </div>
+        <div class="notif-full-content">
+            <p class="notif-full-text">{{ n.message }}</p>
+            <span class="notif-full-time">{{ n.time|timesince }} ago</span>
+        </div>
+        {% if not n.read %}
+        <span class="notif-unread-dot"></span>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-dash">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <h4>No notifications</h4>
+    <p>You're all caught up! Notifications will appear here.</p>
+</div>
+{% endif %}
+{% endblock %}

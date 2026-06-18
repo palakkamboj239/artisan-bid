@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Invoice #{{ invoice.invoice_number }} – ArtisanBid{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/payments.css' %}" />
+{% endblock %}
+
+{% block content %}
+<section class="invoice-section">
+    <div class="invoice-container">
+        <!-- Invoice Header -->
+        <div class="invoice-header">
+            <div class="invoice-brand">
+                <span class="invoice-logo">ArtisanBid</span>
+                <span class="invoice-tagline">Where Art Meets Legacy</span>
+            </div>
+            <div class="invoice-title-group">
+                <h1>Invoice</h1>
+                <span class="invoice-number">#{{ invoice.invoice_number }}</span>
+            </div>
+        </div>
+
+        <!-- Status ribbon -->
+        <div class="invoice-status {% if invoice.is_paid %}paid{% else %}pending{% endif %}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                {% if invoice.is_paid %}<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>{% else %}<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>{% endif %}
+            </svg>
+            <span>{{ invoice.is_paid|yesno:"Paid,Payment Pending" }}</span>
+        </div>
+
+        <!-- Bill To + Dates -->
+        <div class="invoice-meta-grid">
+            <div class="invoice-meta-block">
+                <h4>Bill To</h4>
+                <strong>{{ invoice.user.get_full_name|default:invoice.user.username }}</strong>
+                <p>{{ invoice.user.email }}</p>
+            </div>
+            <div class="invoice-meta-block text-end">
+                <div class="invoice-date-row">
+                    <span>Issued:</span>
+                    <strong>{{ invoice.issued_at|date:"F j, Y" }}</strong>
+                </div>
+                <div class="invoice-date-row">
+                    <span>Due:</span>
+                    <strong>{{ invoice.due_at|date:"F j, Y" }}</strong>
+                </div>
+                {% if invoice.paid_at %}
+                <div class="invoice-date-row">
+                    <span>Paid:</span>
+                    <strong>{{ invoice.paid_at|date:"F j, Y" }}</strong>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Item -->
+        <div class="invoice-item">
+            {% with payment=invoice.payment %}
+            {% if payment.auction.artwork.primary_image %}
+            <img src="{{ payment.auction.artwork.primary_image.url }}" alt="{{ payment.auction.auction_title }}" class="invoice-item-img" />
+            {% endif %}
+            {% endwith %}
+            <div class="invoice-item-info">
+                <h3>{{ invoice.auction.auction_title|default:"Auction Item" }}</h3>
+                <p class="invoice-artist">{{ invoice.auction.artwork.artist_name|default:"" }}</p>
+                {% if invoice.auction.artwork %}
+                <div class="invoice-item-meta">
+                    <span>{{ invoice.auction.artwork.medium|default:"" }}</span>
+                    {% if invoice.auction.artwork.dimensions %}<span>• {{ invoice.auction.artwork.dimensions }}</span>{% endif %}
+                    {% if invoice.auction.artwork.creation_year %}<span>• {{ invoice.auction.artwork.creation_year }}</span>{% endif %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="invoice-item-price">${{ invoice.subtotal|floatformat:2 }}</div>
+        </div>
+
+        <!-- Totals -->
+        <div class="invoice-totals">
+            <div class="invoice-total-row">
+                <span>Subtotal</span>
+                <strong>${{ invoice.subtotal|floatformat:2 }}</strong>
+            </div>
+            {% if invoice.buyer_premium %}
+            <div class="invoice-total-row">
+                <span>Buyer's Premium</span>
+                <strong>${{ invoice.buyer_premium|floatformat:2 }}</strong>
+            </div>
+            {% endif %}
+            {% if invoice.tax_amount %}
+            <div class="invoice-total-row">
+                <span>Tax</span>
+                <strong>${{ invoice.tax_amount|floatformat:2 }}</strong>
+            </div>
+            {% endif %}
+            {% if invoice.shipping %}
+            <div class="invoice-total-row">
+                <span>Shipping</span>
+                <strong>${{ invoice.shipping|floatformat:2 }}</strong>
+            </div>
+            {% endif %}
+            <div class="invoice-total-row grand">
+                <span>Total</span>
+                <strong class="text-gold">${{ invoice.total|floatformat:2 }}</strong>
+            </div>
+        </div>
+
+        <!-- Payment Details -->
+        {% with payment=invoice.payment %}
+        <div class="invoice-payment">
+            <h4>Payment Details</h4>
+            <div class="invoice-payment-grid">
+                <div>
+                    <span>Payment ID</span>
+                    <strong>{{ payment.razorpay_payment_id|default:"—" }}</strong>
+                </div>
+                <div>
+                    <span>Order ID</span>
+                    <strong>{{ payment.razorpay_order_id|default:"—" }}</strong>
+                </div>
+                <div>
+                    <span>Method</span>
+                    <strong>{{ payment.get_payment_method_display }}</strong>
+                </div>
+                <div>
+                    <span>Status</span>
+                    <strong>{{ payment.get_status_display }}</strong>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+
+        <!-- Footer -->
+        <div class="invoice-footer">
+            <p>Thank you for your purchase at ArtisanBid.</p>
+            <div class="invoice-footer-actions">
+                <a href="{% url 'payments:download_invoice' invoice_number=invoice.invoice_number %}" class="btn-outline-gold-dash">
+                    Download
+                </a>
+                <button onclick="window.print()" class="btn-gold-dash">Print</button>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

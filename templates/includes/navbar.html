@@ -1,0 +1,72 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top luxury-navbar">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'core:home' %}">
+            <span class="brand-text">ArtisanBid</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNavbar">
+            <ul class="navbar-nav mx-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'core:home' %}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'portraits:portrait_home' %}">Portraits</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'auctions:auction_list' %}">Auctions</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'artworks:artwork_list' %}">Artworks</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#artists">Artists</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'portraits:cart_detail' %}">
+                            Cart{% if user.portrait_cart.is_active and user.portrait_cart.item_count > 0 %}
+                            <span class="cart-badge" id="cartBadge">{{ user.portrait_cart.item_count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'users:dashboard' %}">Dashboard</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="{% url 'users:dashboard' %}">Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{% url 'auctions:my_auctions' %}">My Auctions</a></li>
+                            <li><a class="dropdown-item" href="{% url 'users:profile' %}">Profile</a></li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li>
+                                <form method="post" action="{% url 'users:logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item">Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'users:login' %}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-register" href="{% url 'users:register' %}">Register</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>

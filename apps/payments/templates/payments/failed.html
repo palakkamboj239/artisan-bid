@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Payment Failed – ArtisanBid{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/payments.css' %}" />
+{% endblock %}
+
+{% block content %}
+<section class="payment-result-section">
+    <div class="payment-result-card failed">
+        <div class="result-icon failed">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+        <h1>Payment Failed</h1>
+        <p class="result-subtitle">Your payment could not be processed. Please try again.</p>
+
+        <div class="result-actions">
+            <a href="{{ retry_url }}" class="btn-gold-result">Try Again</a>
+            <a href="{% url 'payments:history' %}" class="btn-outline-result">Payment History</a>
+        </div>
+
+        <div class="result-footer">
+            <p>If the issue persists, please contact support.</p>
+            <a href="{% url 'users:dashboard' %}" class="result-back">Return to Dashboard</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

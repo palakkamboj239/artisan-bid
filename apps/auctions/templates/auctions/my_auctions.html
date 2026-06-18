@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Auctions – ArtisanBid{% endblock %}
+
+{% block content %}
+<div class="section-padding">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <span class="section-overline">Your Activity</span>
+            <h2 class="section-title">My Auctions</h2>
+            <div class="section-divider"></div>
+        </div>
+
+        <!-- My Bids -->
+        <div class="dashboard-card mb-5">
+            <div class="dashboard-card-header">
+                <h5 class="card-title mb-0">My Bids</h5>
+            </div>
+            <div class="dashboard-card-body">
+                {% if my_bids %}
+                <div class="table-responsive">
+                    <table class="table table-dark table-borderless mb-0">
+                        <thead>
+                            <tr>
+                                <th>Auction</th>
+                                <th>Your Bid</th>
+                                <th>Current Bid</th>
+                                <th>Status</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bid in my_bids %}
+                            <tr>
+                                <td><a href="{{ bid.auction.get_absolute_url }}">{{ bid.auction.auction_title }}</a></td>
+                                <td>${{ bid.bid_amount|floatformat:2 }}</td>
+                                <td>${{ bid.auction.current_bid|default:bid.auction.starting_bid|floatformat:2 }}</td>
+                                <td><span class="badge bg-{{ bid.auction.status }}">{{ bid.auction.get_status_display }}</span></td>
+                                <td><small class="text-muted">{{ bid.bid_time|timesince }} ago</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state text-center py-4">
+                    <div class="empty-icon">✦</div>
+                    <p class="text-muted">You haven't placed any bids yet.</p>
+                    <a href="{% url 'auctions:auction_list' %}" class="btn btn-outline-gold btn-sm">Browse Auctions</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- My Watchlist -->
+        <div class="dashboard-card mb-5">
+            <div class="dashboard-card-header">
+                <h5 class="card-title mb-0">My Watchlist</h5>
+            </div>
+            <div class="dashboard-card-body">
+                {% if my_watchlist %}
+                <div class="row g-3">
+                    {% for watch in my_watchlist %}
+                    <div class="col-md-4">
+                        <div class="auction-card">
+                            <div class="auction-image-wrapper" style="height:160px;">
+                                <img src="{% static 'images/placeholder-1.svg' %}" class="auction-image" alt="" />
+                                <span class="auction-badge status-{{ watch.auction.status }}">{{ watch.auction.get_status_display }}</span>
+                            </div>
+                            <div class="auction-info p-3">
+                                <h6 class="auction-title">{{ watch.auction.auction_title }}</h6>
+                                <p class="current-bid mb-0">${{ watch.auction.current_bid|default:watch.auction.starting_bid|floatformat:2 }}</p>
+                                <a href="{{ watch.auction.get_absolute_url }}" class="btn btn-outline-gold btn-sm w-100 mt-2">View</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state text-center py-4">
+                    <div class="empty-icon">♛</div>
+                    <p class="text-muted">No auctions in your watchlist.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- My Sales -->
+        {% if my_sales %}
+        <div class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h5 class="card-title mb-0">My Sales</h5>
+            </div>
+            <div class="dashboard-card-body">
+                <div class="table-responsive">
+                    <table class="table table-dark table-borderless mb-0">
+                        <thead>
+                            <tr>
+                                <th>Artwork</th>
+                                <th>Status</th>
+                                <th>Current Bid</th>
+                                <th>Ends</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sale in my_sales %}
+                            <tr>
+                                <td><a href="{{ sale.get_absolute_url }}">{{ sale.auction_title }}</a></td>
+                                <td><span class="badge bg-{{ sale.status }}">{{ sale.get_status_display }}</span></td>
+                                <td>${{ sale.current_bid|default:sale.starting_bid|floatformat:2 }}</td>
+                                <td><small class="text-muted">{{ sale.end_time|timeuntil }}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

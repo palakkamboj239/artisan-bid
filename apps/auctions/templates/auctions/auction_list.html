@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Auctions – ArtisanBid{% endblock %}
+
+{% block content %}
+<section class="section-padding">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <span class="section-overline">Bid Now</span>
+            <h2 class="section-title">Auctions</h2>
+            <div class="section-divider"></div>
+            <p class="section-subtitle text-muted">Live bidding and upcoming sales</p>
+        </div>
+
+        <!-- Filter tabs -->
+        <div class="auction-filters text-center mb-5">
+            <a href="{% url 'auctions:auction_list' %}" class="btn btn-sm {% if not request.GET.status %}btn-gold{% else %}btn-outline-gold{% endif %} me-2 mb-2">All</a>
+            <a href="?status=live" class="btn btn-sm {% if request.GET.status == 'live' %}btn-gold{% else %}btn-outline-gold{% endif %} me-2 mb-2">Live</a>
+            <a href="?status=upcoming" class="btn btn-sm {% if request.GET.status == 'upcoming' %}btn-gold{% else %}btn-outline-gold{% endif %} me-2 mb-2">Upcoming</a>
+            <a href="?status=ended" class="btn btn-sm {% if request.GET.status == 'ended' %}btn-gold{% else %}btn-outline-gold{% endif %} me-2 mb-2">Ended</a>
+            <a href="?status=sold" class="btn btn-sm {% if request.GET.status == 'sold' %}btn-gold{% else %}btn-outline-gold{% endif %} me-2 mb-2">Sold</a>
+        </div>
+
+        <div class="row g-4">
+            {% for auction in auctions %}
+            <div class="col-lg-4 col-md-6">
+                <div class="auction-card">
+                    <div class="auction-image-wrapper">
+                        {% if auction.artwork.primary_image %}
+                            <img src="{{ auction.artwork.primary_image.url }}" class="auction-image" alt="{{ auction.auction_title }}" />
+                        {% else %}
+                            <img src="{% static 'images/placeholder-1.svg' %}" class="auction-image" alt="{{ auction.auction_title }}" />
+                        {% endif %}
+                        <span class="auction-badge status-{{ auction.status }}">
+                            {{ auction.get_status_display }}
+                        </span>
+                        {% if auction.status == "live" %}
+                        <div class="auction-countdown">
+                            <span class="countdown-label">Ending in</span>
+                            <span class="countdown-timer" data-end="{{ auction.end_time|date:'c' }}">—</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="auction-info">
+                        <h5 class="auction-title">{{ auction.auction_title }}</h5>
+                        <p class="auction-artist">{{ auction.artwork.artist_name }}</p>
+                        <div class="auction-details">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">Current Bid</small>
+                                    <p class="current-bid mb-0">${{ auction.current_bid|default:auction.starting_bid|floatformat:2 }}</p>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted">Bids</small>
+                                    <p class="bid-count mb-0">{{ auction.total_bids }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="{{ auction.get_absolute_url }}" class="btn btn-gold btn-sm w-100 mt-3">
+                            {% if auction.status == "live" %}Place Bid{% elif auction.status == "upcoming" %}View Details{% else %}View Result{% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center text-muted py-5">
+                <div class="empty-icon" style="font-size:4rem;">◈</div>
+                <p class="mt-3">No auctions available at this time.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll(".countdown-timer[data-end]").forEach(function (el) {
+    var end = new Date(el.getAttribute("data-end"));
+    function tick() {
+        var diff = end - new Date();
+        if (diff <= 0) { el.textContent = "Ended"; return; }
+        var d = Math.floor(diff / 86400000);
+        var h = Math.floor((diff % 86400000) / 3600000);
+        var m = Math.floor((diff % 3600000) / 60000);
+        var s = Math.floor((diff % 60000) / 1000);
+        el.textContent = (d > 0 ? d + "d " : "") + h + "h " + m + "m " + s + "s";
+    }
+    tick();
+    setInterval(tick, 1000);
+});
+</script>
+{% endblock %}

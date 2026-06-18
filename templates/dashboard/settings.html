@@ -1,0 +1,166 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="dash-header">
+    <div class="dash-header-text">
+        <h1>Settings</h1>
+        <p>Manage your account preferences.</p>
+    </div>
+</div>
+
+<div class="settings-layout">
+    <div class="settings-nav">
+        <a href="#profile" class="settings-nav-link active" data-target="profile">Profile</a>
+        <a href="#password" class="settings-nav-link" data-target="password">Password</a>
+        <a href="#notifications" class="settings-nav-link" data-target="notif-prefs">Notifications</a>
+        <a href="#privacy" class="settings-nav-link" data-target="privacy">Privacy</a>
+        <a href="#account" class="settings-nav-link" data-target="account">Account</a>
+    </div>
+
+    <div class="settings-content">
+        <!-- Profile -->
+        <div class="settings-panel active" id="panel-profile">
+            <h3>Profile Information</h3>
+            <form method="post" enctype="multipart/form-data" action="{% url 'users:edit_profile' %}">
+                {% csrf_token %}
+                <div class="settings-profile-img">
+                    <div class="settings-avatar">
+                        {% if user.profile.profile_picture %}
+                        <img src="{{ user.profile.profile_picture.url }}" alt="{{ user.username }}" id="profilePreview" />
+                        {% else %}
+                        <img src="{% static 'images/artist-placeholder.svg' %}" alt="{{ user.username }}" id="profilePreview" />
+                        {% endif %}
+                    </div>
+                    <label class="btn-outline-gold-dash btn-sm-file">
+                        Change Photo
+                        <input type="file" name="profile_picture" accept="image/*" id="profileUpload" hidden />
+                    </label>
+                </div>
+                <div class="settings-field">
+                    <label>Username</label>
+                    <input type="text" value="{{ user.username }}" class="settings-input" disabled />
+                    <small>Username cannot be changed</small>
+                </div>
+                <div class="settings-field">
+                    <label>Email</label>
+                    <input type="email" value="{{ user.email }}" class="settings-input" disabled />
+                </div>
+                <div class="settings-field">
+                    <label>Bio</label>
+                    <textarea name="bio" class="settings-input" rows="3">{{ user.profile.bio }}</textarea>
+                </div>
+                <div class="settings-field">
+                    <label>Account Type</label>
+                    <select name="account_type" class="settings-input">
+                        <option value="collector" {% if user.profile.account_type == 'collector' %}selected{% endif %}>Collector</option>
+                        <option value="artist" {% if user.profile.account_type == 'artist' %}selected{% endif %}>Artist</option>
+                        <option value="dealer" {% if user.profile.account_type == 'dealer' %}selected{% endif %}>Dealer</option>
+                        <option value="curator" {% if user.profile.account_type == 'curator' %}selected{% endif %}>Curator</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-gold-dash">Save Changes</button>
+            </form>
+        </div>
+
+        <!-- Password -->
+        <div class="settings-panel" id="panel-password">
+            <h3>Change Password</h3>
+            <form method="post" action="{% url 'users:edit_profile' %}">
+                {% csrf_token %}
+                <div class="settings-field">
+                    <label>Current Password</label>
+                    <input type="password" class="settings-input" name="oldpassword" required />
+                </div>
+                <div class="settings-field">
+                    <label>New Password</label>
+                    <input type="password" class="settings-input" name="password1" required />
+                </div>
+                <div class="settings-field">
+                    <label>Confirm New Password</label>
+                    <input type="password" class="settings-input" name="password2" required />
+                </div>
+                <button type="submit" class="btn-gold-dash" disabled>Update Password (coming soon)</button>
+            </form>
+        </div>
+
+        <!-- Notification Preferences -->
+        <div class="settings-panel" id="panel-notif-prefs">
+            <h3>Notification Preferences</h3>
+            <div class="settings-toggle">
+                <div>
+                    <strong>Outbid Notifications</strong>
+                    <small>When someone outbids you</small>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+            </div>
+            <div class="settings-toggle">
+                <div>
+                    <strong>Auction Ending</strong>
+                    <small>When an auction is ending soon</small>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+            </div>
+            <div class="settings-toggle">
+                <div>
+                    <strong>Auction Won</strong>
+                    <small>When you win an auction</small>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+            </div>
+            <div class="settings-toggle">
+                <div>
+                    <strong>New Auctions</strong>
+                    <small>When new auctions are listed</small>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" /><span class="toggle-slider"></span></label>
+            </div>
+            <div class="settings-toggle">
+                <div>
+                    <strong>Email Digest</strong>
+                    <small>Weekly email summary</small>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+            </div>
+        </div>
+
+        <!-- Privacy -->
+        <div class="settings-panel" id="panel-privacy">
+            <h3>Privacy</h3>
+            <div class="settings-toggle">
+                <div>
+                    <strong>Public Profile</strong>
+                    <small>Allow others to see your profile</small>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+            </div>
+            <div class="settings-toggle">
+                <div>
+                    <strong>Show Bidding Activity</strong>
+                    <small>Display your bids publicly</small>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" /><span class="toggle-slider"></span></label>
+            </div>
+            <div class="settings-toggle">
+                <div>
+                    <strong>Show Watchlist</strong>
+                    <small>Display your watchlist publicly</small>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" /><span class="toggle-slider"></span></label>
+            </div>
+        </div>
+
+        <!-- Account -->
+        <div class="settings-panel" id="panel-account">
+            <h3>Account</h3>
+            <div class="settings-danger">
+                <div>
+                    <strong>Delete Account</strong>
+                    <small>Permanently delete your account and all data</small>
+                </div>
+                <button class="btn-danger-dash">Delete Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

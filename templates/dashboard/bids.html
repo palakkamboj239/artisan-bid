@@ -1,0 +1,73 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="dash-header">
+    <div class="dash-header-text">
+        <h1>My Bids</h1>
+        <p>Track all your bidding activity across auctions.</p>
+    </div>
+</div>
+
+<div class="dash-tabs">
+    <a href="?filter=active" class="dash-tab {% if filter == 'active' %}active{% endif %}">Active</a>
+    <a href="?filter=won" class="dash-tab {% if filter == 'won' %}active{% endif %}">Won</a>
+    <a href="?filter=lost" class="dash-tab {% if filter == 'lost' %}active{% endif %}">Lost</a>
+    <a href="?filter=all" class="dash-tab {% if filter == 'all' %}active{% endif %}">All Time</a>
+</div>
+
+{% if bids %}
+<div class="bids-table-dash">
+    <div class="bids-table-header">
+        <span>Artwork</span>
+        <span>Auction</span>
+        <span>Your Bid</span>
+        <span>Current Bid</span>
+        <span>Status</span>
+        <span>Action</span>
+    </div>
+    {% for bid in bids %}
+    <div class="bids-table-row {% if bid.is_winning_bid %}winning{% endif %}">
+        <div class="bids-cell thumb">
+            {% if bid.auction.artwork.primary_image %}
+            <img src="{{ bid.auction.artwork.primary_image.url }}" alt="" />
+            {% else %}
+            <img src="{% static 'images/placeholder-1.svg' %}" alt="" />
+            {% endif %}
+        </div>
+        <div class="bids-cell">
+            <strong>{{ bid.auction.auction_title }}</strong>
+            <small>{{ bid.auction.artwork.artist_name|default:"" }}</small>
+        </div>
+        <div class="bids-cell">
+            <span class="bid-amount-dash">${{ bid.bid_amount|floatformat:2 }}</span>
+        </div>
+        <div class="bids-cell">
+            ${{ bid.auction.current_bid|default:bid.auction.starting_bid|floatformat:2 }}
+        </div>
+        <div class="bids-cell">
+            {% if bid.auction.status == 'live' %}
+            <span class="status-pill live">Live</span>
+            {% elif bid.auction.status == 'sold' and bid.is_winning_bid %}
+            <span class="status-pill won">Won</span>
+            {% elif bid.auction.status == 'ended' or bid.auction.status == 'sold' %}
+            <span class="status-pill lost">Outbid</span>
+            {% else %}
+            <span class="status-pill upcoming">{{ bid.auction.get_status_display }}</span>
+            {% endif %}
+        </div>
+        <div class="bids-cell action">
+            <a href="{% url 'auctions:auction_room' slug=bid.auction.slug %}" class="btn-sm-dash">View</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-dash">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    <h4>No bids yet</h4>
+    <p>Start bidding on live auctions to track your activity.</p>
+    <a href="{% url 'auctions:auction_list' %}" class="btn-outline-gold-dash">Browse Auctions</a>
+</div>
+{% endif %}
+{% endblock %}

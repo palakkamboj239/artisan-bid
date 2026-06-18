@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Payment Successful – ArtisanBid{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/payments.css' %}" />
+{% endblock %}
+
+{% block content %}
+<section class="payment-result-section">
+    <div class="payment-result-card success">
+        <div class="result-icon success">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <h1>Payment Successful</h1>
+        <p class="result-subtitle">Your transaction has been completed securely.</p>
+
+        <div class="result-details">
+            <div class="result-detail">
+                <span>Transaction ID</span>
+                <strong>{{ payment.razorpay_payment_id }}</strong>
+            </div>
+            <div class="result-detail">
+                <span>Amount Paid</span>
+                <strong class="text-gold">${{ payment.total_amount|floatformat:2 }}</strong>
+            </div>
+            <div class="result-detail">
+                <span>Auction</span>
+                <strong>{{ auction.auction_title }}</strong>
+            </div>
+            <div class="result-detail">
+                <span>Date</span>
+                <strong>{{ payment.paid_at|date:"F j, Y" }}</strong>
+            </div>
+        </div>
+
+        {% if invoice %}
+        <div class="result-actions">
+            <a href="{% url 'payments:invoice' invoice_number=invoice.invoice_number %}" class="btn-gold-result">
+                View Invoice
+            </a>
+            <a href="{% url 'auctions:auction_detail' slug=auction.slug %}" class="btn-outline-result">
+                View Auction
+            </a>
+            <a href="{% url 'payments:history' %}" class="btn-outline-result">
+                Payment History
+            </a>
+        </div>
+        {% endif %}
+
+        <div class="result-footer">
+            <p>A confirmation email has been sent to <strong>{{ user.email }}</strong></p>
+            <a href="{% url 'users:dashboard' %}" class="result-back">Return to Dashboard</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Live: {{ auction.auction_title }} – ArtisanBid{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auction_room.css' %}" />
+{% endblock %}
+
+{% block content %}
+<section class="live-room">
+    <div class="room-container">
+        <!-- LEFT: Artwork Showcase -->
+        <div class="room-artwork">
+            <div class="artwork-frame">
+                {% if auction.artwork.primary_image %}
+                <img src="{{ auction.artwork.primary_image.url }}"
+                     alt="{{ auction.auction_title }}"
+                     class="artwork-image" id="artworkImage" />
+                {% else %}
+                <img src="{% static 'images/placeholder-1.svg' %}"
+                     alt="{{ auction.auction_title }}"
+                     class="artwork-image" id="artworkImage" />
+                {% endif %}
+                <div class="artwork-overlay"></div>
+            </div>
+            <div class="artwork-info">
+                <h2 class="artwork-title">{{ auction.artwork.title }}</h2>
+                <p class="artwork-artist">{{ auction.artwork.artist_name|default:"Anonymous" }}</p>
+                <div class="artwork-meta">
+                    <span>{{ auction.artwork.medium|default:"—" }}</span>
+                    <span class="dot">&bull;</span>
+                    <span>{{ auction.artwork.dimensions|default:"—" }}</span>
+                    <span class="dot">&bull;</span>
+                    <span>{{ auction.artwork.creation_year|default:"—" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Bidding Panel -->
+        <div class="room-panel" id="biddingPanel">
+            <!-- Header Bar -->
+            <div class="panel-header">
+                <div class="d-flex align-items-center gap-3">
+                    <h1 class="panel-lot">Live Auction</h1>
+                    <span class="status-badge" id="statusBadge">{{ auction.get_status_display }}</span>
+                </div>
+                <div class="header-actions">
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'auctions:toggle_watch' slug=auction.slug %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="watch-btn {% if is_watching %}watching{% endif %}"
+                                id="watchBtn">
+                            {% if is_watching %}★ Watching{% else %}☆ Watch{% endif %}
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Live Indicator Bar -->
+            <div class="live-bar">
+                <div class="live-indicator">
+                    <span class="live-dot"></span>
+                    <span class="live-text">Live Now</span>
+                </div>
+                <div class="user-stats">
+                    <span class="stat-item" id="viewerCount">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <span id="viewersNum">0</span> viewing
+                    </span>
+                    <span class="stat-divider">|</span>
+                    <span class="stat-item" id="bidderCount">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <span id="biddersNum">0</span> bidders
+                    </span>
+                </div>
+            </div>
+
+            <!-- Countdown -->
+            <div class="countdown-section" id="countdownSection">
+                <div class="countdown-label">Auction {% if auction.status == "upcoming" %}Starts{% else %}Ends{% endif %} In</div>
+                <div class="countdown-display" id="countdownDisplay">
+                    <div class="countdown-block">
+                        <span class="countdown-value" id="cdHours">00</span>
+                        <span class="countdown-unit">Hours</span>
+                    </div>
+                    <span class="countdown-sep">:</span>
+                    <div class="countdown-block">
+                        <span class="countdown-value" id="cdMinutes">00</span>
+                        <span class="countdown-unit">Minutes</span>
+                    </div>
+                    <span class="countdown-sep">:</span>
+                    <div class="countdown-block">
+                        <span class="countdown-value" id="cdSeconds">00</span>
+                        <span class="countdown-unit">Seconds</span>
+                    </div>
+                </div>
+                {% if auction.auto_extend_time > 0 %}
+                <div class="extend-notice">Anti-sniping: +{{ auction.auto_extend_time }}min auto-extend active</div>
+                {% endif %}
+            </div>
+
+            <!-- Bid Info -->
+            <div class="bid-info">
+                <div class="current-bid-section">
+                    <div class="current-bid-label">Current Bid</div>
+                    <div class="current-bid-value" id="currentBid">${{ auction.current_bid|default:auction.starting_bid|floatformat:2 }}</div>
+                    <div class="bid-details">
+                        <span id="totalBids">{{ auction.total_bids }}</span> bids &middot;
+                        Increment <strong>${{ auction.bid_increment|floatformat:2 }}</strong>
+                        {% if auction.reserve_price %}
+                        &middot;
+                        <span id="reserveStatus" class="reserve-{{ auction.current_bid|yesno:'met,pending' }}">
+                            {% if auction.current_bid and auction.current_bid >= auction.reserve_price %}
+                            Reserve Met
+                            {% else %}
+                            Reserve: ${{ auction.reserve_price|floatformat:2 }}
+                            {% endif %}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bid Form -->
+            <div class="bid-form-section" id="bidFormSection">
+                {% if auction.status == "live" and user.is_authenticated and can_bid %}
+                <div class="bid-input-group">
+                    <span class="bid-currency">$</span>
+                    <input type="number" id="bidAmount" step="0.01" min="0.01"
+                           class="bid-input"
+                           placeholder="{{ auction.minimum_next_bid|floatformat:2 }}" />
+                    <button class="bid-btn" id="placeBidBtn" disabled>
+                        <span class="btn-text">Place Bid</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                </div>
+                <div class="bid-minimum">Minimum: $<span id="minBid">{{ auction.minimum_next_bid|floatformat:2 }}</span></div>
+                <div class="bid-error" id="bidError"></div>
+                {% elif auction.status == "live" and not user.is_authenticated %}
+                <a href="{% url 'users:login' %}?next={{ request.path }}" class="login-to-bid-btn">
+                    Login to Bid
+                </a>
+                {% elif auction.status == "upcoming" %}
+                <div class="upcoming-notice">Bidding opens when the auction starts</div>
+                {% elif auction.has_ended %}
+                <div class="ended-notice">This auction has ended</div>
+                {% endif %}
+            </div>
+
+            <!-- Winner announcement -->
+            <div class="winner-section" id="winnerSection" style="display:none;">
+                <div class="winner-ribbon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    Sold to <strong id="winnerName"></strong> for <strong id="winnerPrice"></strong>
+                </div>
+            </div>
+
+            <!-- Bid Activity Feed -->
+            <div class="bid-feed-section">
+                <h3 class="feed-title">Bid Activity</h3>
+                <div class="bid-feed" id="bidFeed">
+                    {% for bid in top_bids %}
+                    <div class="feed-item {% if forloop.first %}leading{% endif %}" data-bid-id="{{ bid.id }}">
+                        <div class="feed-bidder">
+                            <span class="feed-avatar">{{ bid.bidder.username|first|upper }}</span>
+                            <div>
+                                <strong class="feed-name">{{ bid.bidder.username }}</strong>
+                                {% if forloop.first %}<span class="feed-leading">Leading</span>{% endif %}
+                            </div>
+                        </div>
+                        <div class="feed-amount">
+                            <span class="feed-price">${{ bid.bid_amount|floatformat:2 }}</span>
+                            <span class="feed-time">{{ bid.bid_time|timesince }} ago</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="feed-empty" id="feedEmpty">
+                        <div class="feed-empty-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        </div>
+                        <p>No bids yet. Be the first to bid!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Auction History -->
+            <div class="history-section">
+                <h3 class="feed-title">Event History</h3>
+                <div class="history-feed" id="historyFeed">
+                    {% for h in auction.history.all|slice:":10" %}
+                    <div class="history-item">
+                        <span class="history-action action-{{ h.action }}">{{ h.get_action_display }}</span>
+                        <span class="history-desc">{{ h.description }}</span>
+                        <span class="history-time">{{ h.timestamp|timesince }} ago</span>
+                    </div>
+                    {% empty %}
+                    <div class="history-empty">No events yet</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Connection status toast -->
+<div class="connection-toast" id="connectionToast">
+    <span class="toast-dot" id="toastDot"></span>
+    <span id="toastText">Connected</span>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script id="auctionData" type="application/json">
+{
+    "slug": "{{ auction.slug }}",
+    "wsUrl": "ws{% if request.is_secure %}s{% endif %}://{{ request.get_host }}/ws/auctions/{{ auction.slug }}/",
+    "csrf": "{{ csrf_token }}",
+    "userId": {{ user.id|default:"null" }},
+    "username": "{{ user.username|default:'' }}",
+    "isAuthenticated": {{ user.is_authenticated|lower }}
+}
+</script>
+<script src="{% static 'js/auction_room.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Artworks – ArtisanBid{% endblock %}
+
+{% block content %}
+<section class="section-padding">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <h2 class="section-title">Artworks</h2>
+            <p class="section-subtitle text-muted">Browse our curated collection</p>
+        </div>
+        <div class="row g-4">
+            {% for artwork in artworks %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="artwork-card">
+                        <div class="artwork-image-wrapper">
+                            {% if artwork.image %}
+                                <img src="{{ artwork.image.url }}" class="artwork-image" alt="{{ artwork.title }}" />
+                            {% else %}
+                                <div class="artwork-placeholder">
+                                    <span>{{ artwork.title|first }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="artwork-info">
+                            <h5 class="artwork-title">{{ artwork.title }}</h5>
+                            <p class="artwork-artist">{{ artwork.artist_name }}</p>
+                            <p class="artwork-meta text-muted small">{{ artwork.medium }}</p>
+                            <a href="{{ artwork.get_absolute_url }}" class="btn btn-sm btn-outline-gold">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center text-muted py-5">
+                    <p>No artworks available yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

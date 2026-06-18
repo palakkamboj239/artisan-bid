@@ -1,0 +1,43 @@
+{% load static %}
+<!-- Dashboard Sidebar -->
+<aside class="dashboard-sidebar">
+    <div class="sidebar-user text-center py-4">
+        <div class="sidebar-avatar">
+            {% if user.profile.profile_picture %}
+                <img src="{{ user.profile.profile_picture.url }}" alt="{{ user.username }}" />
+            {% else %}
+                <img src="{% static 'images/artist-placeholder.svg' %}" alt="{{ user.username }}" />
+            {% endif %}
+        </div>
+        <h6 class="sidebar-username mt-2">{{ user.get_full_name|default:user.username }}</h6>
+        <small class="text-muted">{{ user.profile.get_account_type_display|default:"Collector" }}</small>
+    </div>
+
+    <nav class="sidebar-nav">
+        <a href="{% url 'users:dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <span class="sidebar-icon">◈</span> Dashboard
+        </a>
+        <a href="#" class="sidebar-link">
+            <span class="sidebar-icon">✦</span> My Bids
+        </a>
+        <a href="#" class="sidebar-link">
+            <span class="sidebar-icon">♛</span> Watchlist
+        </a>
+        <a href="#" class="sidebar-link">
+            <span class="sidebar-icon">❖</span> Saved Artworks
+        </a>
+        <a href="#" class="sidebar-link">
+            <span class="sidebar-icon">⚜</span> Active Auctions
+        </a>
+        <a href="{% url 'users:edit_profile' %}" class="sidebar-link">
+            <span class="sidebar-icon">✧</span> Settings
+        </a>
+        <hr class="sidebar-divider" />
+        <form method="post" action="{% url 'users:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="sidebar-link sidebar-logout w-100 text-start">
+                <span class="sidebar-icon">→</span> Logout
+            </button>
+        </form>
+    </nav>
+</aside>

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard – ArtisanBid{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="dash-layout">
+    {% include "dashboard/includes/sidebar.html" %}
+    <div class="dash-main">
+        {% include "dashboard/includes/topbar.html" %}
+        <div class="dash-content">
+            {% block dashboard_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% block dashboard_js %}{% endblock %}
+{% endblock %}

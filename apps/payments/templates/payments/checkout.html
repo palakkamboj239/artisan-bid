@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Checkout – {{ auction.auction_title }} – ArtisanBid{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/payments.css' %}" />
+{% endblock %}
+
+{% block content %}
+<section class="payment-section">
+    <div class="payment-container">
+        <!-- Left: Auction Summary -->
+        <div class="payment-summary">
+            <div class="checkout-header">
+                <span class="checkout-brand">ArtisanBid</span>
+                <span class="checkout-badge">Secure Checkout</span>
+            </div>
+
+            <div class="checkout-artwork">
+                <div class="checkout-artwork-img">
+                    {% if auction.artwork.primary_image %}
+                    <img src="{{ auction.artwork.primary_image.url }}" alt="{{ auction.auction_title }}" />
+                    {% else %}
+                    <img src="{% static 'images/placeholder-1.svg' %}" alt="" />
+                    {% endif %}
+                </div>
+                <div class="checkout-artwork-info">
+                    <h2>{{ auction.auction_title }}</h2>
+                    <p class="checkout-artist">{{ auction.artwork.artist_name|default:"Anonymous" }}</p>
+                    <div class="checkout-meta">
+                        <span>{{ auction.artwork.medium|default:"—" }}</span>
+                        {% if auction.artwork.dimensions %}<span class="dot">•</span><span>{{ auction.artwork.dimensions }}</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="checkout-details">
+                <div class="checkout-detail-row">
+                    <span>Auction Winner</span>
+                    <strong>{{ user.get_full_name|default:user.username }}</strong>
+                </div>
+                <div class="checkout-detail-row">
+                    <span>Winning Bid</span>
+                    <strong class="text-gold">${{ amount|floatformat:2 }}</strong>
+                </div>
+                <div class="checkout-detail-row">
+                    <span>Buyer's Premium</span>
+                    <strong>$0.00</strong>
+                </div>
+                <div class="checkout-detail-row">
+                    <span>Tax</span>
+                    <strong>${{ tax_amount|floatformat:2 }}</strong>
+                </div>
+                <div class="checkout-detail-row total">
+                    <span>Total Due</span>
+                    <strong class="text-gold">${{ total_amount|floatformat:2 }}</strong>
+                </div>
+            </div>
+
+            <div class="checkout-secure">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span>Secured with 256-bit SSL encryption</span>
+            </div>
+        </div>
+
+        <!-- Right: Payment Panel -->
+        <div class="payment-panel">
+            <div class="payment-panel-header">
+                <h1>Complete Payment</h1>
+                <p>Pay securely via Razorpay</p>
+            </div>
+
+            {% if existing_payment and existing_payment.status == "pending" %}
+            <div class="payment-resume">
+                You have a pending payment. Continue or retry below.
+            </div>
+            {% endif %}
+
+            <div class="payment-methods">
+                <div class="payment-method active">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    <span>Credit / Debit Card</span>
+                </div>
+                <div class="payment-method">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+                    <span>UPI / Net Banking</span>
+                </div>
+                <div class="payment-method">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12"/><path d="M6 12h12"/></svg>
+                    <span>Wallet</span>
+                </div>
+            </div>
+
+            <button class="pay-now-btn" id="payNowBtn">
+                <span class="pay-text">Pay ${{ total_amount|floatformat:2 }}</span>
+                <span class="pay-loader" style="display:none;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-dasharray="31.4 31.4" stroke-linecap="round"/></svg>
+                    Processing...
+                </span>
+            </button>
+
+            <div class="payment-error" id="paymentError" style="display:none;"></div>
+
+            <div class="payment-footer-text">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Your payment is protected by Razorpay's secure gateway
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+var payBtn = document.getElementById("payNowBtn");
+var errorEl = document.getElementById("paymentError");
+var csrf = "{{ csrf_token }}";
+var initiateUrl = "{% url 'payments:initiate' slug=auction.slug %}";
+var verifyUrl = "{% url 'payments:verify' slug=auction.slug %}";
+
+payBtn.addEventListener("click", function () {
+    payBtn.disabled = true;
+    payBtn.querySelector(".pay-text").style.display = "none";
+    payBtn.querySelector(".pay-loader").style.display = "inline-flex";
+    errorEl.style.display = "none";
+
+    fetch(initiateUrl, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": csrf,
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: "csrfmiddlewaretoken=" + encodeURIComponent(csrf),
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+        if (data.error) {
+            showError(data.error);
+            return;
+        }
+
+        var options = {
+            key: data.key_id,
+            amount: data.amount,
+            currency: data.currency,
+            name: data.name,
+            description: data.description,
+            order_id: data.order_id,
+            prefill: data.prefill,
+            theme: { color: "#c9a84c" },
+            handler: function (response) {
+                // Submit verification form
+                var form = document.createElement("form");
+                form.method = "POST";
+                form.action = verifyUrl;
+                form.innerHTML =
+                    '<input name="csrfmiddlewaretoken" value="' + csrf + '">' +
+                    '<input name="razorpay_payment_id" value="' + response.razorpay_payment_id + '">' +
+                    '<input name="razorpay_order_id" value="' + response.razorpay_order_id + '">' +
+                    '<input name="razorpay_signature" value="' + response.razorpay_signature + '">';
+                document.body.appendChild(form);
+                form.submit();
+            },
+            modal: {
+                ondismiss: function () {
+                    resetBtn();
+                },
+            },
+        };
+
+        var rzp = new Razorpay(options);
+        rzp.open();
+    })
+    .catch(function (err) {
+        showError("Failed to initiate payment. Please try again.");
+    });
+});
+
+function showError(msg) {
+    errorEl.textContent = msg;
+    errorEl.style.display = "block";
+    resetBtn();
+}
+
+function resetBtn() {
+    payBtn.disabled = false;
+    payBtn.querySelector(".pay-text").style.display = "inline";
+    payBtn.querySelector(".pay-loader").style.display = "none";
+}
+</script>
+{% endblock %}

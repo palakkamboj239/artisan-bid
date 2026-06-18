@@ -1,0 +1,223 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% block dashboard_content %}
+<!-- Welcome -->
+<div class="dash-header">
+    <div class="dash-header-text">
+        <h1>Welcome back, {{ user.get_short_name|default:user.username }}</h1>
+        <p>{{ greeting }}</p>
+    </div>
+    <div class="dash-header-actions">
+        <a href="{% url 'auctions:auction_list' %}" class="btn-gold-dash">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            Browse Auctions
+        </a>
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="stats-grid">
+    <div class="stat-card-dash">
+        <div class="stat-icon-wrap gold">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value" data-count="{{ total_bids }}">{{ total_bids }}</span>
+            <span class="stat-label">Total Bids</span>
+        </div>
+        <div class="stat-trend up">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg>
+            {{ total_bids|default:"0" }}
+        </div>
+    </div>
+    <div class="stat-card-dash">
+        <div class="stat-icon-wrap green">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value" data-count="{{ active_auctions }}">{{ active_auctions }}</span>
+            <span class="stat-label">Active Auctions</span>
+        </div>
+        <div class="stat-trend up">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg>
+            {{ active_auctions|default:"0" }}
+        </div>
+    </div>
+    <div class="stat-card-dash">
+        <div class="stat-icon-wrap blue">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value" data-count="{{ won_auctions }}">{{ won_auctions }}</span>
+            <span class="stat-label">Won Auctions</span>
+        </div>
+        <div class="stat-trend up">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg>
+            {{ won_auctions|default:"0" }}
+        </div>
+    </div>
+    <div class="stat-card-dash">
+        <div class="stat-icon-wrap purple">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div class="stat-content">
+            <span class="stat-value" data-count="{{ watchlist_count }}">{{ watchlist_count }}</span>
+            <span class="stat-label">Watchlist</span>
+        </div>
+        <div class="stat-trend">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg>
+            {{ watchlist_count|default:"0" }}
+        </div>
+    </div>
+</div>
+
+<!-- Active Bids -->
+<div class="dash-section">
+    <div class="section-header">
+        <h2>Active Bids</h2>
+        <a href="{% url 'users:dashboard_bids' %}" class="section-link">View All</a>
+    </div>
+    {% if active_bids %}
+    <div class="bid-cards-grid">
+        {% for bid in active_bids %}
+        <div class="bid-card-dash">
+            <div class="bid-card-img">
+                {% if bid.auction.artwork.primary_image %}
+                <img src="{{ bid.auction.artwork.primary_image.url }}" alt="{{ bid.auction.auction_title }}" />
+                {% else %}
+                <img src="{% static 'images/placeholder-1.svg' %}" alt="{{ bid.auction.auction_title }}" />
+                {% endif %}
+                <span class="bid-status live">Live</span>
+            </div>
+            <div class="bid-card-body">
+                <h5>{{ bid.auction.auction_title }}</h5>
+                <div class="bid-card-info">
+                    <div>
+                        <small>Your Bid</small>
+                        <strong class="text-gold">${{ bid.bid_amount|floatformat:2 }}</strong>
+                    </div>
+                    <div class="text-end">
+                        <small>Current</small>
+                        <strong>${{ bid.auction.current_bid|default:bid.auction.starting_bid|floatformat:2 }}</strong>
+                    </div>
+                </div>
+                <div class="bid-card-timer" data-end="{{ bid.auction.end_time|date:'c' }}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span class="timer-text">--</span>
+                </div>
+            </div>
+            <a href="{% url 'auctions:auction_room' slug=bid.auction.slug %}" class="bid-card-action">Enter Room</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-dash">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <h4>No active bids</h4>
+        <p>Start bidding on live auctions to see them here.</p>
+        <a href="{% url 'auctions:auction_list' %}" class="btn-outline-gold-dash">Browse Auctions</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Watchlist Preview + Recent Activity -->
+<div class="dash-grid-2col">
+    <div class="dash-section">
+        <div class="section-header">
+            <h2>Watchlist</h2>
+            <a href="{% url 'users:dashboard_watchlist' %}" class="section-link">View All</a>
+        </div>
+        {% if watchlist_items %}
+        <div class="watchlist-preview">
+            {% for item in watchlist_items|slice:":4" %}
+            <a href="{% url 'auctions:auction_detail' slug=item.auction.slug %}" class="watchlist-item-dash">
+                <div class="watchlist-thumb">
+                    {% if item.auction.artwork.primary_image %}
+                    <img src="{{ item.auction.artwork.primary_image.url }}" alt="" />
+                    {% else %}
+                    <img src="{% static 'images/placeholder-1.svg' %}" alt="" />
+                    {% endif %}
+                </div>
+                <div class="watchlist-info">
+                    <strong>{{ item.auction.auction_title }}</strong>
+                    <span class="watchlist-price">${{ item.auction.current_bid|default:item.auction.starting_bid|floatformat:2 }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-dash small">
+            <p>Your watchlist is empty.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="dash-section">
+        <div class="section-header">
+            <h2>Recent Activity</h2>
+        </div>
+        {% if recent_activity %}
+        <div class="activity-feed">
+            {% for act in recent_activity %}
+            <div class="activity-item">
+                <div class="activity-icon {% if act.type == 'bid' %}gold{% elif act.type == 'win' %}green{% elif act.type == 'watch' %}blue{% else %}neutral{% endif %}">
+                    {% if act.type == 'bid' %}✦{% elif act.type == 'win' %}♛{% elif act.type == 'watch' %}◈{% else %}◆{% endif %}
+                </div>
+                <div class="activity-text">
+                    <p>{{ act.message }}</p>
+                    <span>{{ act.time|timesince }} ago</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-dash small">
+            <p>No recent activity.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Seller Section (if applicable) -->
+{% if selling_auctions %}
+<div class="dash-section">
+    <div class="section-header">
+        <h2>Your Auctions</h2>
+        <a href="{% url 'users:dashboard_seller' %}" class="section-link">Manage</a>
+    </div>
+    <div class="bid-cards-grid">
+        {% for auction in selling_auctions|slice:":4" %}
+        <div class="bid-card-dash">
+            <div class="bid-card-img">
+                {% if auction.artwork.primary_image %}
+                <img src="{{ auction.artwork.primary_image.url }}" alt="{{ auction.auction_title }}" />
+                {% else %}
+                <img src="{% static 'images/placeholder-1.svg' %}" alt="{{ auction.auction_title }}" />
+                {% endif %}
+                <span class="bid-status {{ auction.status }}">{{ auction.get_status_display }}</span>
+            </div>
+            <div class="bid-card-body">
+                <h5>{{ auction.auction_title }}</h5>
+                <div class="bid-card-info">
+                    <div>
+                        <small>Current Bid</small>
+                        <strong class="text-gold">${{ auction.current_bid|default:auction.starting_bid|floatformat:2 }}</strong>
+                    </div>
+                    <div class="text-end">
+                        <small>Bids</small>
+                        <strong>{{ auction.total_bids }}</strong>
+                    </div>
+                </div>
+                <div class="bid-card-timer" data-end="{{ auction.end_time|date:'c' }}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span class="timer-text">--</span>
+                </div>
+            </div>
+            <a href="{% url 'auctions:auction_room' slug=auction.slug %}" class="bid-card-action">View Room</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

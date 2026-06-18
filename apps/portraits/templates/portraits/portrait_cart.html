@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Your Cart — ArtisanBid Studio{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/portrait.css' %}" />
+{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<section class="customize-breadcrumb">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb luxury-breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'portraits:portrait_home' %}">Portraits</a></li>
+                <li class="breadcrumb-item active">Cart</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<!-- Cart Section -->
+<section class="cart-section">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="cart-page-title">Your Cart</h1>
+            </div>
+        </div>
+
+        {% if cart and cart.items.exists %}
+
+        <div class="row g-5">
+
+            <!-- LEFT: Cart Items -->
+            <div class="col-lg-8">
+
+                {% for item in cart.items.all %}
+                <div class="cart-item-card" data-item-id="{{ item.id }}">
+                    <div class="cart-item-left">
+                        <div class="cart-item-image">
+                            {% if item.product.sample_image %}
+                            <img src="{{ item.product.sample_image.url }}" alt="{{ item.product.name }}" />
+                            {% else %}
+                            <div class="cart-item-placeholder">
+                                <span>{{ item.product.name|first }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="cart-item-body">
+                        <div class="cart-item-header">
+                            <div>
+                                <h4 class="cart-item-title">{{ item.product.name }}</h4>
+                                <span class="cart-item-category">{{ item.product.category.name }}</span>
+                            </div>
+                            <div class="cart-item-total">₹{{ item.calculated_total_price|floatformat:0 }}</div>
+                        </div>
+
+                        <div class="cart-item-config">
+                            <div class="config-chip"><span class="config-label">Size</span> {{ item.size.name }}</div>
+                            <div class="config-chip"><span class="config-label">Canvas</span> {{ item.canvas.name|default:"—" }}</div>
+                            <div class="config-chip"><span class="config-label">Frame</span> {{ item.frame.name|default:"No Frame" }}</div>
+                            <div class="config-chip"><span class="config-label">Sketch</span> {{ item.sketch_type.name|default:"Standard" }}</div>
+                        </div>
+
+                        {% if item.reference_images.exists %}
+                        <div class="cart-item-refs">
+                            <span class="cart-refs-label">Reference Photos</span>
+                            <div class="cart-refs-grid">
+                                {% for ref in item.reference_images.all %}
+                                <div class="cart-ref-thumb">
+                                    <img src="{{ ref.image.url }}" alt="Ref" />
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="cart-item-footer">
+                            <div class="cart-qty-control">
+                                <button type="button" class="qty-btn qty-minus" data-item-id="{{ item.id }}">−</button>
+                                <span class="qty-value" id="qty-{{ item.id }}">{{ item.quantity }}</span>
+                                <button type="button" class="qty-btn qty-plus" data-item-id="{{ item.id }}">+</button>
+                            </div>
+                            <button type="button" class="btn-remove-item" data-item-id="{{ item.id }}">Remove</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+            </div>
+
+            <!-- RIGHT: Summary -->
+            <div class="col-lg-4">
+                <div class="cart-summary">
+                    <h4 class="cart-summary-title">Order Summary</h4>
+
+                    <div class="cart-summary-rows">
+                        <div class="cart-summary-row">
+                            <span>Items ({{ cart.item_count }})</span>
+                            <span id="cartSubtotal">₹{{ cart.subtotal|floatformat:0 }}</span>
+                        </div>
+                    </div>
+
+                    <div class="cart-summary-divider"></div>
+
+                    <div class="cart-summary-total">
+                        <span class="cart-total-label">Subtotal</span>
+                        <span class="cart-total-value" id="cartTotal">₹{{ cart.subtotal|floatformat:0 }}</span>
+                    </div>
+
+                    <div class="cart-summary-info">
+                        <p class="small text-muted mb-0">Pricing, tax, and delivery options will be calculated at checkout.</p>
+                    </div>
+
+                    <div class="cart-summary-actions">
+                        <a href="{% url 'portraits:portrait_home' %}" class="btn btn-outline-gold w-100 mb-2">Continue Shopping</a>
+                    </div>
+
+                    <div class="cart-delivery-note">
+                        <div class="delivery-icon">🚚</div>
+                        <div class="delivery-text">
+                            <strong>Estimated Delivery</strong>
+                            <span>2–4 weeks after order confirmation</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <div class="cart-empty">
+            <div class="cart-empty-icon">🖼️</div>
+            <h3 class="cart-empty-title">Your cart is empty</h3>
+            <p class="cart-empty-text">Start customizing your portrait — choose your style, size, and preferences.</p>
+            <a href="{% url 'portraits:portrait_home' %}" class="btn btn-gold">Browse Portraits</a>
+        </div>
+
+        {% endif %}
+    </div>
+</section>
+
+<!-- Hidden CSRF token for JS API calls -->
+{% csrf_token %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/portrait-cart.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    window.PortraitCart.init();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Payment History – ArtisanBid{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/payments.css' %}" />
+{% endblock %}
+
+{% block content %}
+<section class="payment-history-section">
+    <div class="payment-history-container">
+        <div class="history-header">
+            <h1>Payment History</h1>
+            <p>Your transaction records across all auctions.</p>
+        </div>
+
+        {% if payments %}
+        <div class="history-table-wrap">
+            <div class="history-table-header">
+                <span>Date</span>
+                <span>Auction</span>
+                <span>Amount</span>
+                <span>Method</span>
+                <span>Status</span>
+                <span>Invoice</span>
+            </div>
+            {% for payment in payments %}
+            <div class="history-table-row">
+                <div class="history-cell">{{ payment.created_at|date:"M d, Y" }}</div>
+                <div class="history-cell">
+                    <strong>{{ payment.auction.auction_title|default:"—" }}</strong>
+                </div>
+                <div class="history-cell text-gold">${{ payment.total_amount|floatformat:2 }}</div>
+                <div class="history-cell">{{ payment.get_payment_method_display }}</div>
+                <div class="history-cell">
+                    <span class="pay-status {{ payment.status }}">{{ payment.get_status_display }}</span>
+                </div>
+                <div class="history-cell">
+                    {% if payment.invoice %}
+                    <a href="{% url 'payments:invoice' invoice_number=payment.invoice.invoice_number %}" class="invoice-link">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        Invoice
+                    </a>
+                    {% else %}
+                    <span class="text-muted">—</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="history-pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="btn-outline-gold-dash">Previous</a>
+            {% endif %}
+            <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="btn-outline-gold-dash">Next</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-payments">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            <h3>No Payment History</h3>
+            <p>Your payment records will appear here after you win and pay for an auction.</p>
+            <a href="{% url 'auctions:auction_list' %}" class="btn-gold-result">Browse Auctions</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

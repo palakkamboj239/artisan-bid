@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }} — ArtisanBid Studio{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/portrait.css' %}" />
+{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<section class="product-breadcrumb-section">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb luxury-breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'portraits:portrait_home' %}">Portraits</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'portraits:category_detail' slug=category.slug %}">{{ category.name }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<!-- Product Detail -->
+<section class="section-padding pt-0">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Image -->
+            <div class="col-lg-7">
+                <div class="product-detail-image">
+                    {% if product.sample_image %}
+                    <img src="{{ product.sample_image.url }}" alt="{{ product.name }}" />
+                    {% else %}
+                    <div class="product-detail-placeholder">
+                        <span>{{ product.name|first }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% if product.sample_gallery %}
+                <div class="product-gallery mt-3">
+                    <img src="{{ product.sample_gallery.url }}" alt="{{ product.name }} gallery" class="img-fluid" style="width:100%; max-height:300px; object-fit:cover;" />
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Info -->
+            <div class="col-lg-5">
+                <div class="product-detail-info">
+                    <span class="product-detail-category">{{ category.name }}</span>
+                    <h1 class="product-detail-title">{{ product.name }}</h1>
+                    <p class="product-detail-desc">{{ product.description }}</p>
+
+                    <div class="product-detail-price-box">
+                        <span class="price-label">Starting from</span>
+                        <span class="price-value">₹{{ product.base_price|floatformat:0 }}</span>
+                    </div>
+
+                    <!-- Sizes -->
+                    <div class="product-section">
+                        <h4 class="product-section-title">Available Sizes</h4>
+                        <div class="size-list">
+                            {% for size in sizes %}
+                            <div class="size-pill">
+                                <span class="size-pill-name">{{ size.name }}</span>
+                                {% if size.width_cm and size.height_cm %}
+                                <span class="size-pill-dim">{{ size.width_cm|floatformat:0 }}×{{ size.height_cm|floatformat:0 }} cm</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Canvas -->
+                    <div class="product-section">
+                        <h4 class="product-section-title">Canvas Options</h4>
+                        <div class="option-list">
+                            {% for canvas in canvases %}
+                            <div class="option-item">
+                                <div class="option-item-info">
+                                    <strong>{{ canvas.name }}</strong>
+                                    {% if canvas.description %}
+                                    <p class="option-item-desc">{{ canvas.description|truncatewords:10 }}</p>
+                                    {% endif %}
+                                </div>
+                                <span class="option-item-price">+₹{{ canvas.price_adjustment|floatformat:0 }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Frames -->
+                    <div class="product-section">
+                        <h4 class="product-section-title">Frame Options</h4>
+                        <div class="option-list">
+                            {% for frame in frames %}
+                            <div class="option-item">
+                                <div class="option-item-info">
+                                    <strong>{{ frame.name }}</strong>
+                                    {% if frame.description %}
+                                    <p class="option-item-desc">{{ frame.description|truncatewords:10 }}</p>
+                                    {% endif %}
+                                </div>
+                                <span class="option-item-price">+₹{{ frame.price_adjustment|floatformat:0 }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="product-detail-cta">
+                        <a href="{% url 'portraits:portrait_customize' product_slug=product.slug %}" class="btn btn-gold w-100 mb-2">
+                            Customize This Portrait
+                        </a>
+                        <a href="{% url 'portraits:portrait_home' %}" class="btn btn-outline-gold w-100">Back to All Styles</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

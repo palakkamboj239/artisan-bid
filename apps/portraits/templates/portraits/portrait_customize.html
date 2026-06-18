@@ -1,0 +1,391 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Customize {{ product.name }} — ArtisanBid Studio{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/portrait.css' %}" />
+{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<section class="customize-breadcrumb">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb luxury-breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'portraits:portrait_home' %}">Portraits</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'portraits:category_detail' slug=category.slug %}">{{ category.name }}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'portraits:product_detail' category_slug=category.slug product_slug=product.slug %}">{{ product.name }}</a></li>
+                <li class="breadcrumb-item active">Customize</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<!-- Customization Section -->
+<section class="customize-section">
+    <div class="container">
+        <div class="row g-5">
+
+            <!-- LEFT PANEL — Selectors -->
+            <div class="col-lg-8">
+
+                <!-- Step 0: Product Info -->
+                <div class="customize-product-header">
+                    <div class="customize-product-image">
+                        {% if product.sample_image %}
+                        <img src="{{ product.sample_image.url }}" alt="{{ product.name }}" />
+                        {% else %}
+                        <div class="customize-product-placeholder">
+                            <span>{{ product.name|first }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="customize-product-info">
+                        <span class="customize-category">{{ category.name }}</span>
+                        <h1 class="customize-title">{{ product.name }}</h1>
+                        <p class="customize-desc">{{ product.description }}</p>
+                    </div>
+                </div>
+
+                <!-- Step 1: Upload Reference Images -->
+                <div class="customize-step" id="step-upload">
+                    <div class="step-heading">
+                        <span class="step-badge">01</span>
+                        <h3 class="step-heading-title">Upload Reference Photos</h3>
+                    </div>
+
+                    <div class="upload-zone" id="uploadZone">
+                        <div class="upload-zone-content" id="uploadZoneContent">
+                            <div class="upload-icon">📸</div>
+                            <h4 class="upload-heading">Drop your photos here</h4>
+                            <p class="upload-subtitle">or click to browse — JPG, PNG, WebP accepted (max 5 MB each)</p>
+                            <input type="file" id="referenceImageInput" accept="image/jpeg,image/png,image/webp" multiple class="d-none" />
+                            <button type="button" class="btn btn-outline-gold mt-2" id="uploadBrowseBtn">Choose Photos</button>
+                        </div>
+                        <div class="upload-progress d-none" id="uploadProgress">
+                            <div class="upload-progress-bar"></div>
+                            <span class="upload-progress-text">Uploading...</span>
+                        </div>
+                    </div>
+
+                    <div class="upload-previews" id="uploadPreviews">
+                        {% for img in uploaded_images %}
+                        <div class="upload-preview-card" data-image-id="{{ img.id }}">
+                            <img src="{{ img.image.url }}" alt="Reference {{ forloop.counter }}" />
+                            <button type="button" class="upload-preview-remove" data-image-id="{{ img.id }}" title="Remove">×</button>
+                            <div class="upload-preview-check">✓</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="upload-hint" id="uploadHint">
+                        <span class="upload-count" id="uploadCount">{{ uploaded_images|length }}</span> / {{ max_uploads }} images uploaded
+                    </div>
+                </div>
+
+                <!-- Step 2: Size Selection -->
+                <div class="customize-step" id="step-size">
+                    <div class="step-heading">
+                        <span class="step-badge">02</span>
+                        <h3 class="step-heading-title">Choose Size</h3>
+                    </div>
+                    <div class="size-selector-grid">
+                        {% for size in sizes %}
+                        <label class="size-selector {% if forloop.first %}selected{% endif %}" data-size-id="{{ size.id }}">
+                            <input type="radio" name="size" value="{{ size.id }}"
+                                   data-price-multiplier="{{ size.price_multiplier }}"
+                                   {% if forloop.first %}checked{% endif %} class="visually-hidden" />
+                            <div class="size-selector-visual">
+                                <div class="size-selector-rect" style="
+                                {% if size.width_cm and size.height_cm %}
+                                aspect-ratio: {{ size.width_cm|floatformat:0 }} / {{ size.height_cm|floatformat:0 }};
+                                {% endif %}
+                                "></div>
+                            </div>
+                            <div class="size-selector-label">
+                                <span class="size-name">{{ size.name }}</span>
+                                {% if size.width_cm and size.height_cm %}
+                                <span class="size-dims">{{ size.width_cm|floatformat:0 }}×{{ size.height_cm|floatformat:0 }}"</span>
+                                {% endif %}
+                            </div>
+                            <div class="size-selector-check">
+                                <span class="check-icon">✓</span>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Step 3: Canvas Selection -->
+                <div class="customize-step" id="step-canvas">
+                    <div class="step-heading">
+                        <span class="step-badge">03</span>
+                        <h3 class="step-heading-title">Choose Canvas</h3>
+                    </div>
+                    <div class="canvas-selector-grid">
+                        {% for canvas in canvases %}
+                        <label class="canvas-selector {% if forloop.first %}selected{% endif %}" data-canvas-id="{{ canvas.id }}">
+                            <input type="radio" name="canvas" value="{{ canvas.id }}"
+                                   data-price-adjustment="{{ canvas.price_adjustment }}"
+                                   {% if forloop.first %}checked{% endif %} class="visually-hidden" />
+                            <div class="canvas-selector-visual">
+                                <div class="canvas-swatch" style="
+                                {% if forloop.counter == 1 %}
+                                background: linear-gradient(135deg, #2a2a2a, #444);
+                                {% elif forloop.counter == 2 %}
+                                background: linear-gradient(135deg, #3a3020, #5a4a30);
+                                {% else %}
+                                background: linear-gradient(135deg, #2a2520, #4a3a2a);
+                                {% endif %}
+                                ">
+                                    <span class="canvas-swatch-text">
+                                        {% if forloop.counter == 1 %}S{% elif forloop.counter == 2 %}P{% else %}T{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="canvas-selector-info">
+                                <span class="canvas-name">{{ canvas.name }}</span>
+                                {% if canvas.description %}
+                                <span class="canvas-desc">{{ canvas.description|truncatewords:8 }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="canvas-selector-price">
+                                {% if canvas.price_adjustment > 0 %}
+                                +₹{{ canvas.price_adjustment|floatformat:0 }}
+                                {% else %}
+                                Included
+                                {% endif %}
+                            </div>
+                            <div class="canvas-selector-check">
+                                <span class="check-icon">✓</span>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Step 4: Frame Selection -->
+                <div class="customize-step" id="step-frame">
+                    <div class="step-heading">
+                        <span class="step-badge">04</span>
+                        <h3 class="step-heading-title">Choose Frame <span class="text-muted fw-normal small">(optional)</span></h3>
+                    </div>
+                    <div class="frame-selector-grid">
+                        <!-- No Frame option -->
+                        <label class="frame-selector selected" data-frame-id="">
+                            <input type="radio" name="frame" value=""
+                                   data-price-adjustment="0" checked class="visually-hidden" />
+                            <div class="frame-selector-visual frame-none">
+                                <span class="frame-none-text">No Frame</span>
+                            </div>
+                            <div class="frame-selector-label">
+                                <span class="frame-name">No Frame</span>
+                            </div>
+                            <div class="frame-selector-check">
+                                <span class="check-icon">✓</span>
+                            </div>
+                        </label>
+                        {% for frame in frames %}
+                        <label class="frame-selector" data-frame-id="{{ frame.id }}">
+                            <input type="radio" name="frame" value="{{ frame.id }}"
+                                   data-price-adjustment="{{ frame.price_adjustment }}" class="visually-hidden" />
+                            <div class="frame-selector-visual" style="
+                            {% if forloop.counter == 1 %}
+                            background: #1a1a1a; border: 3px solid #333;
+                            {% elif forloop.counter == 2 %}
+                            background: linear-gradient(135deg, #c9a84c, #b8962f);
+                            {% elif forloop.counter == 3 %}
+                            background: linear-gradient(135deg, #5c4033, #8b6914);
+                            {% elif forloop.counter == 4 %}
+                            background: #f5f5f5; border: 2px solid #ddd;
+                            {% else %}
+                            background: linear-gradient(135deg, #2a2a2a, #555);
+                            {% endif %}
+                            ">
+                                <span class="frame-visual-label">{{ frame.name|first }}</span>
+                            </div>
+                            <div class="frame-selector-label">
+                                <span class="frame-name">{{ frame.name }}</span>
+                                <span class="frame-price-indicator">+₹{{ frame.price_adjustment|floatformat:0 }}</span>
+                            </div>
+                            <div class="frame-selector-check">
+                                <span class="check-icon">✓</span>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Step 5: Sketch Type -->
+                <div class="customize-step" id="step-sketch">
+                    <div class="step-heading">
+                        <span class="step-badge">05</span>
+                        <h3 class="step-heading-title">Choose Sketch Type</h3>
+                    </div>
+                    <div class="sketch-selector-grid">
+                        {% for st in sketch_types %}
+                        <label class="sketch-selector {% if forloop.first %}selected{% endif %}" data-sketch-id="{{ st.id }}">
+                            <input type="radio" name="sketch_type" value="{{ st.id }}"
+                                   data-price-adjustment="{{ st.price_adjustment }}"
+                                   {% if forloop.first %}checked{% endif %} class="visually-hidden" />
+                            <div class="sketch-selector-visual">
+                                <div class="sketch-swatch">
+                                    <span class="sketch-swatch-letter">{{ st.name|first }}</span>
+                                </div>
+                            </div>
+                            <div class="sketch-selector-info">
+                                <span class="sketch-name">{{ st.name }}</span>
+                                {% if st.description %}
+                                <span class="sketch-desc">{{ st.description|truncatewords:6 }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="sketch-selector-price">
+                                {% if st.price_adjustment > 0 %}
+                                +₹{{ st.price_adjustment|floatformat:0 }}
+                                {% else %}
+                                Included
+                                {% endif %}
+                            </div>
+                            <div class="sketch-selector-check">
+                                <span class="check-icon">✓</span>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT PANEL — Live Summary -->
+            <div class="col-lg-4">
+                <div class="customize-summary" id="customizeSummary">
+                    <h4 class="summary-title">Your Selection</h4>
+
+                    <div class="summary-product">
+                        <div class="summary-product-img">
+                            {% if product.sample_image %}
+                            <img src="{{ product.sample_image.url }}" alt="{{ product.name }}" />
+                            {% endif %}
+                        </div>
+                        <div class="summary-product-info">
+                            <h5>{{ product.name }}</h5>
+                            <span class="summary-category">{{ category.name }}</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-options">
+                        <div class="summary-row">
+                            <span class="summary-label">Reference Photos</span>
+                            <span class="summary-value" id="summaryRefCount">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Size</span>
+                            <span class="summary-value" id="summarySize">
+                                {% with sizes|first as first_size %}
+                                {{ first_size.name }}
+                                {% endwith %}
+                            </span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Canvas</span>
+                            <span class="summary-value" id="summaryCanvas">
+                                {% with canvases|first as first_canvas %}
+                                {{ first_canvas.name }}
+                                {% endwith %}
+                            </span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Frame</span>
+                            <span class="summary-value" id="summaryFrame">No Frame</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Sketch Type</span>
+                            <span class="summary-value" id="summarySketch">
+                                {% with sketch_types|first as first_sketch %}
+                                {{ first_sketch.name }}
+                                {% endwith %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="summary-divider"></div>
+
+                    <div class="summary-pricing">
+                        <div class="price-row">
+                            <span>Base Price</span>
+                            <span id="summaryBasePrice">₹{{ product.base_price|floatformat:0 }}</span>
+                        </div>
+                        <div class="price-row">
+                            <span>Size Multiplier</span>
+                            <span id="summaryMultiplier">
+                                {% with sizes|first as first_size %}
+                                {{ first_size.price_multiplier|floatformat:2 }}×
+                                {% endwith %}
+                            </span>
+                        </div>
+                        <div class="price-row">
+                            <span>Canvas Add-on</span>
+                            <span id="summaryCanvasPrice">
+                                {% with canvases|first as first_canvas %}
+                                {% if first_canvas.price_adjustment > 0 %}
+                                +₹{{ first_canvas.price_adjustment|floatformat:0 }}
+                                {% else %}
+                                —
+                                {% endif %}
+                                {% endwith %}
+                            </span>
+                        </div>
+                        <div class="price-row">
+                            <span>Frame Add-on</span>
+                            <span id="summaryFramePrice">—</span>
+                        </div>
+                        <div class="price-row">
+                            <span>Sketch Type Add-on</span>
+                            <span id="summarySketchPrice">—</span>
+                        </div>
+                    </div>
+
+                    <div class="summary-divider"></div>
+
+                    <div class="summary-total">
+                        <span class="total-label">Estimated Total</span>
+                        <span class="total-value" id="summaryTotal">₹{{ product.base_price|floatformat:0 }}</span>
+                    </div>
+
+                    <div class="summary-footer">
+                        {% if user.is_authenticated %}
+                        <button type="button" class="btn btn-gold w-100 btn-add-cart" id="addToCartBtn">
+                            Add to Cart — <span id="addToCartPrice">₹{{ product.base_price|floatformat:0 }}</span>
+                        </button>
+                        {% else %}
+                        <a href="{% url 'users:login' %}?next={{ request.path }}" class="btn btn-outline-gold w-100">
+                            Login to Add to Cart
+                        </a>
+                        {% endif %}
+                        <p class="small text-muted mb-0 mt-2">Prices are estimates. Final pricing confirmed at checkout.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Hidden CSRF token for JS upload/delete API calls -->
+{% csrf_token %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/portrait-customize.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    window.PortraitCustomizer.init({
+        basePrice: {{ product.base_price|stringformat:"f" }},
+        productId: {{ product.id }},
+        currency: 'INR'
+    });
+});
+</script>
+{% endblock %}

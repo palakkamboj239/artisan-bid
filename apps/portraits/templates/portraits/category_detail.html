@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ category.name }} — ArtisanBid Studio{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/portrait.css' %}" />
+{% endblock %}
+
+{% block content %}
+
+<!-- Category Hero -->
+<section class="category-hero">
+    {% if category.hero_image %}
+    <div class="category-hero-bg" style="background-image: url('{{ category.hero_image.url }}');"></div>
+    {% else %}
+    <div class="category-hero-bg"></div>
+    {% endif %}
+    <div class="category-hero-overlay"></div>
+    <div class="container category-hero-content">
+        <div class="row align-items-center min-vh-60">
+            <div class="col-lg-7">
+                <a href="{% url 'portraits:portrait_home' %}" class="hero-breadcrumb">← Back to Portraits</a>
+                <span class="hero-overline">{{ category.products.count }} Portrait Style{{ category.products.count|pluralize }}</span>
+                <h1 class="category-hero-title">{{ category.name }}</h1>
+                <p class="category-hero-subtitle">{{ category.description }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Products Grid -->
+<section class="section-padding">
+    <div class="container">
+        {% if products %}
+        <div class="row g-4">
+            {% for product in products %}
+            <div class="col-lg-4 col-md-6">
+                <a href="{% url 'portraits:product_detail' category_slug=category.slug product_slug=product.slug %}" class="text-decoration-none">
+                    <div class="product-card">
+                        <div class="product-card-image">
+                            {% if product.sample_image %}
+                            <img src="{{ product.sample_image.url }}" alt="{{ product.name }}" />
+                            {% else %}
+                            <div class="product-card-placeholder">
+                                <span>{{ product.name|first }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="product-card-body">
+                            <h4 class="product-card-title">{{ product.name }}</h4>
+                            <p class="product-card-desc">{{ product.description|truncatewords:15 }}</p>
+                            <div class="product-card-footer">
+                                <span class="product-price">From ₹{{ product.base_price|floatformat:0 }}</span>
+                                <span class="product-learn">View Details →</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state text-center py-5">
+            <div class="empty-icon">🖼️</div>
+            <h3>Coming Soon</h3>
+            <p class="text-muted">Portrait styles in this category are being prepared by our artisans.</p>
+            <a href="{% url 'portraits:portrait_home' %}" class="btn btn-outline-gold mt-3">Browse Other Styles</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

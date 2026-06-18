@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}{{ artwork.title }} – ArtisanBid{% endblock %}
+
+{% block content %}
+<section class="section-padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                {% if artwork.image %}
+                    <img src="{{ artwork.image.url }}" class="img-fluid" alt="{{ artwork.title }}" />
+                {% endif %}
+            </div>
+            <div class="col-lg-6">
+                <h2 class="section-title">{{ artwork.title }}</h2>
+                <p class="lead">{{ artwork.artist_name }}</p>
+                <hr />
+                <dl class="row">
+                    <dt class="col-sm-4">Year</dt>
+                    <dd class="col-sm-8">{{ artwork.year_created|default:"—" }}</dd>
+                    <dt class="col-sm-4">Medium</dt>
+                    <dd class="col-sm-8">{{ artwork.medium|default:"—" }}</dd>
+                    <dt class="col-sm-4">Dimensions</dt>
+                    <dd class="col-sm-8">{{ artwork.dimensions|default:"—" }}</dd>
+                    <dt class="col-sm-4">Category</dt>
+                    <dd class="col-sm-8">{{ artwork.category|default:"—" }}</dd>
+                </dl>
+                <p>{{ artwork.description|linebreaks }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

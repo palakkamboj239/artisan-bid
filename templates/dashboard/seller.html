@@ -1,0 +1,96 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="dash-header">
+    <div class="dash-header-text">
+        <h1>My Sales</h1>
+        <p>Manage your auctions and track sales performance.</p>
+    </div>
+    <div class="dash-header-actions">
+        <a href="#" class="btn-gold-dash">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Upload Artwork
+        </a>
+    </div>
+</div>
+
+<!-- Seller Stats -->
+<div class="stats-grid">
+    <div class="stat-card-dash">
+        <div class="stat-icon-wrap gold"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></div>
+        <div class="stat-content">
+            <span class="stat-value" data-count="{{ total_revenue|default:0 }}">${{ total_revenue|default:"0"|floatformat:0 }}</span>
+            <span class="stat-label">Total Revenue</span>
+        </div>
+    </div>
+    <div class="stat-card-dash">
+        <div class="stat-icon-wrap green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg></div>
+        <div class="stat-content">
+            <span class="stat-value" data-count="{{ active_listings|default:0 }}">{{ active_listings|default:"0" }}</span>
+            <span class="stat-label">Active Listings</span>
+        </div>
+    </div>
+    <div class="stat-card-dash">
+        <div class="stat-icon-wrap blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+        <div class="stat-content">
+            <span class="stat-value" data-count="{{ items_sold|default:0 }}">{{ items_sold|default:"0" }}</span>
+            <span class="stat-label">Items Sold</span>
+        </div>
+    </div>
+    <div class="stat-card-dash">
+        <div class="stat-icon-wrap purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <div class="stat-content">
+            <span class="stat-value" data-count="{{ total_views|default:0 }}">{{ total_views|default:"0" }}</span>
+            <span class="stat-label">Total Views</span>
+        </div>
+    </div>
+</div>
+
+<!-- Your Auctions -->
+<div class="dash-section">
+    <div class="section-header">
+        <h2>Your Auction Listings</h2>
+    </div>
+    {% if selling_auctions %}
+    <div class="bids-table-dash">
+        <div class="bids-table-header">
+            <span>Artwork</span>
+            <span>Title</span>
+            <span>Current Bid</span>
+            <span>Bids</span>
+            <span>Ends</span>
+            <span>Status</span>
+            <span>Action</span>
+        </div>
+        {% for auction in selling_auctions %}
+        <div class="bids-table-row">
+            <div class="bids-cell thumb">
+                {% if auction.artwork.primary_image %}
+                <img src="{{ auction.artwork.primary_image.url }}" alt="" />
+                {% else %}
+                <img src="{% static 'images/placeholder-1.svg' %}" alt="" />
+                {% endif %}
+            </div>
+            <div class="bids-cell">
+                <strong>{{ auction.auction_title }}</strong>
+            </div>
+            <div class="bids-cell">${{ auction.current_bid|default:auction.starting_bid|floatformat:2 }}</div>
+            <div class="bids-cell">{{ auction.total_bids }}</div>
+            <div class="bids-cell timer" data-end="{{ auction.end_time|date:'c' }}"><span class="timer-text">--</span></div>
+            <div class="bids-cell"><span class="status-pill {{ auction.status }}">{{ auction.get_status_display }}</span></div>
+            <div class="bids-cell action">
+                <a href="{% url 'auctions:auction_room' slug=auction.slug %}" class="btn-sm-dash">View</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-dash">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+        <h4>No listings yet</h4>
+        <p>Create your first auction listing to start selling.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

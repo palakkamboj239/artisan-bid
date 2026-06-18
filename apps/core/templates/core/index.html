@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}ArtisanBid – Premium Art Auctions{% endblock %}
+
+{% block content %}
+
+<!-- ====================================================================
+     HERO SECTION
+     ==================================================================== -->
+<section class="hero-section d-flex align-items-center">
+    <div class="hero-overlay"></div>
+    <div class="hero-bg" style="background-image: url('{% static 'images/hero-bg.svg' %}');"></div>
+    <div class="container position-relative">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <p class="hero-overline">Est. 2025</p>
+                <h1 class="hero-title">Where Art Meets<br /><span class="text-gold">Legacy</span></h1>
+                <p class="hero-subtitle">
+                    Bid on masterpieces from the world's most celebrated artists.
+                    Curated auctions. Unrivaled expertise. Global community.
+                </p>
+                <div class="hero-cta mt-5">
+                    <a href="{% url 'auctions:auction_list' %}" class="btn btn-gold btn-lg me-3 mb-2">Explore Auctions</a>
+                    <a href="{% url 'artworks:artwork_list' %}" class="btn btn-outline-light btn-lg mb-2">Browse Artworks</a>
+                </div>
+                <div class="hero-stats mt-5 pt-4">
+                    <div class="row g-3 justify-content-center">
+                        <div class="col-4 col-md-3">
+                            <div class="stat-item">
+                                <span class="stat-number">12K+</span>
+                                <span class="stat-label">Artworks</span>
+                            </div>
+                        </div>
+                        <div class="col-4 col-md-3">
+                            <div class="stat-item">
+                                <span class="stat-number">8K+</span>
+                                <span class="stat-label">Collectors</span>
+                            </div>
+                        </div>
+                        <div class="col-4 col-md-3">
+                            <div class="stat-item">
+                                <span class="stat-number">150+</span>
+                                <span class="stat-label">Auctions</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="hero-scroll-indicator">
+        <span>Scroll</span>
+    </div>
+</section>
+
+<!-- ====================================================================
+     FEATURED ARTWORKS
+     ==================================================================== -->
+<section class="section-padding">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <span class="section-overline">Curated Selection</span>
+            <h2 class="section-title">Featured Artworks</h2>
+            <div class="section-divider"></div>
+            <p class="section-subtitle text-muted">Exceptional pieces from renowned artists across the globe</p>
+        </div>
+        <div class="row g-4">
+            {% for artwork in featured_artworks %}
+            <div class="col-lg-4 col-md-6">
+                <div class="artwork-card">
+                    <div class="artwork-image-wrapper">
+                        {% if artwork.image %}
+                            <img src="{{ artwork.image.url }}" class="artwork-image" alt="{{ artwork.title }}" />
+                        {% else %}
+                            <img src="{% static 'images/placeholder-'|add:forloop.counter|add:'.svg' %}"
+                                 class="artwork-image" alt="{{ artwork.title }}" />
+                        {% endif %}
+                        <div class="artwork-image-overlay">
+                            <a href="{{ artwork.get_absolute_url }}" class="btn btn-outline-gold btn-sm">View Details</a>
+                        </div>
+                    </div>
+                    <div class="artwork-info">
+                        <h5 class="artwork-title">{{ artwork.title }}</h5>
+                        <p class="artwork-artist">{{ artwork.artist_name }}</p>
+                        <p class="artwork-meta text-muted small">{{ artwork.medium|default:"Mixed Media" }} &middot; {{ artwork.year_created|default:"—" }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% if not featured_artworks %}
+        <div class="row g-4">
+            {% for i in "123456" %}
+            <div class="col-lg-4 col-md-6">
+                <div class="artwork-card">
+                    <div class="artwork-image-wrapper">
+                        <img src="{% static 'images/placeholder-'|add:i|add:'.svg' %}" class="artwork-image" alt="Masterpiece" />
+                        <div class="artwork-image-overlay">
+                            <a href="{% url 'artworks:artwork_list' %}" class="btn btn-outline-gold btn-sm">View Details</a>
+                        </div>
+                    </div>
+                    <div class="artwork-info">
+                        <h5 class="artwork-title">Untitled Masterpiece</h5>
+                        <p class="artwork-artist">Renowned Artist</p>
+                        <p class="artwork-meta text-muted small">Oil on Canvas &middot; 2024</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="text-center mt-5">
+            <a href="{% url 'artworks:artwork_list' %}" class="btn btn-outline-gold btn-lg">View All Artworks</a>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================================
+     LIVE AUCTIONS
+     ==================================================================== -->
+<section class="section-padding bg-dark-section">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <span class="section-overline">Live Now</span>
+            <h2 class="section-title">Live Auctions</h2>
+            <div class="section-divider"></div>
+            <p class="section-subtitle text-muted">Place your bids before time runs out</p>
+        </div>
+        <div class="row g-4">
+            {% for auction in live_auctions %}
+            <div class="col-lg-4 col-md-6">
+                <div class="auction-card">
+                    <div class="auction-image-wrapper">
+                        {% if auction.artwork.image %}
+                            <img src="{{ auction.artwork.image.url }}" class="auction-image" alt="{{ auction.artwork.title }}" />
+                        {% else %}
+                            <img src="{% static 'images/placeholder-'|add:forloop.counter|add:'.svg' %}"
+                                 class="auction-image" alt="{{ auction.artwork.title }}" />
+                        {% endif %}
+                        <span class="auction-badge live-pulse">Live</span>
+                        <div class="auction-countdown" data-end="{{ auction.ends_at|date:'Y-m-d H:i:s' }}">
+                            <span class="countdown-label">Ending in</span>
+                            <span class="countdown-timer">—</span>
+                        </div>
+                    </div>
+                    <div class="auction-info">
+                        <h5 class="auction-title">{{ auction.artwork.title }}</h5>
+                        <p class="auction-artist">{{ auction.artwork.artist_name }}</p>
+                        <div class="auction-details">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">Current Bid</small>
+                                    <p class="current-bid mb-0">${{ auction.current_bid|default:auction.starting_bid|floatformat:2 }}</p>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted">Bids</small>
+                                    <p class="bid-count mb-0">{{ auction.bid_count }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="{% url 'auctions:auction_detail' auction.pk %}" class="btn btn-gold btn-sm w-100 mt-3">Place Bid</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% if not live_auctions %}
+        <div class="row g-4">
+            {% for i in "123" %}
+            <div class="col-lg-4 col-md-6">
+                <div class="auction-card">
+                    <div class="auction-image-wrapper">
+                        <img src="{% static 'images/placeholder-'|add:i|add:'.svg' %}" class="auction-image" alt="Auction Lot" />
+                        <span class="auction-badge live-pulse">Live</span>
+                        <div class="auction-countdown">
+                            <span class="countdown-label">Ending in</span>
+                            <span class="countdown-timer">2d 14h 32m</span>
+                        </div>
+                    </div>
+                    <div class="auction-info">
+                        <h5 class="auction-title">Masterpiece Collection</h5>
+                        <p class="auction-artist">Celebrated Artist</p>
+                        <div class="auction-details">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">Current Bid</small>
+                                    <p class="current-bid mb-0">$24,000.00</p>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted">Bids</small>
+                                    <p class="bid-count mb-0">18</p>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="{% url 'auctions:auction_list' %}" class="btn btn-gold btn-sm w-100 mt-3">Place Bid</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="text-center mt-5">
+            <a href="{% url 'auctions:auction_list' %}" class="btn btn-outline-gold btn-lg">View All Auctions</a>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================================
+     TOP ARTISTS
+     ==================================================================== -->
+<section id="artists" class="section-padding">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <span class="section-overline">Masters</span>
+            <h2 class="section-title">Top Artists</h2>
+            <div class="section-divider"></div>
+            <p class="section-subtitle text-muted">Discover works by the most sought-after artists</p>
+        </div>
+        <div class="row g-4">
+            {% for artist in top_artists %}
+            <div class="col-lg-3 col-md-4 col-6">
+                <div class="artist-card">
+                    <div class="artist-avatar">
+                        {% if artist.profile_image %}
+                            <img src="{{ artist.profile_image.url }}" alt="{{ artist.artist_name }}" />
+                        {% else %}
+                            <img src="{% static 'images/artist-placeholder.svg' %}" alt="{{ artist.artist_name }}" />
+                        {% endif %}
+                    </div>
+                    <h5 class="artist-name">{{ artist.artist_name }}</h5>
+                    <p class="artist-specialty text-muted small">{{ artist.country|default:"International" }}</p>
+                </div>
+            </div>
+            {% empty %}
+                {% for i in "12345678" %}
+                <div class="col-lg-3 col-md-4 col-6">
+                    <div class="artist-card">
+                        <div class="artist-avatar">
+                            <img src="{% static 'images/artist-placeholder.svg' %}" alt="Artist" />
+                        </div>
+                        <h5 class="artist-name">Master Artist</h5>
+                        <p class="artist-specialty text-muted small">International</p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================================
+     WHY CHOOSE US
+     ==================================================================== -->
+<section class="section-padding bg-dark-section">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <span class="section-overline">Why ArtisanBid</span>
+            <h2 class="section-title">The Finest Auction Experience</h2>
+            <div class="section-divider"></div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">&loz;</div>
+                    <h5 class="feature-title">Expert Curation</h5>
+                    <p class="feature-text text-muted">Every piece is vetted by our panel of international art specialists.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">&#9674;</div>
+                    <h5 class="feature-title">Global Reach</h5>
+                    <p class="feature-text text-muted">Connect with collectors and sellers from over 80 countries.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">&#10086;</div>
+                    <h5 class="feature-title">Secure Bidding</h5>
+                    <p class="feature-text text-muted">Bank-grade encryption and transparent transaction history.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon">&#9819;</div>
+                    <h5 class="feature-title">White-Glove Service</h5>
+                    <p class="feature-text text-muted">Personalized support from acquisition to delivery.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================================
+     TESTIMONIALS
+     ==================================================================== -->
+<section class="section-padding">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <span class="section-overline">Testimonials</span>
+            <h2 class="section-title">What Collectors Say</h2>
+            <div class="section-divider"></div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">
+                        "ArtisanBid transformed how I build my collection. The curation is impeccable and the bidding experience is seamless."
+                    </p>
+                    <div class="testimonial-author">
+                        <p class="author-name mb-0">Eleanor V.</p>
+                        <p class="author-role text-muted small">Collector, New York</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">
+                        "I consigned a family heirloom and was blown away by the expertise and the final sale price. Truly world-class."
+                    </p>
+                    <div class="testimonial-author">
+                        <p class="author-name mb-0">James K.</p>
+                        <p class="author-role text-muted small">Consignor, London</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">
+                        "The live auction experience is electrifying. It captures the energy of a salesroom from anywhere in the world."
+                    </p>
+                    <div class="testimonial-author">
+                        <p class="author-name mb-0">Sophie L.</p>
+                        <p class="author-role text-muted small">Collector, Paris</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====================================================================
+     FINAL CTA
+     ==================================================================== -->
+<section class="cta-section section-padding text-center">
+    <div class="container">
+        <h2 class="cta-title">Ready to Start Collecting?</h2>
+        <p class="cta-text text-muted">
+            Join ArtisanBid and gain access to exclusive auctions, private sales, and a global community of art enthusiasts.
+        </p>
+        <div class="mt-4">
+            <a href="{% url 'users:register' %}" class="btn btn-gold btn-lg me-3 mb-2">Create an Account</a>
+            <a href="{% url 'auctions:auction_list' %}" class="btn btn-outline-light btn-lg mb-2">Start Bidding</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

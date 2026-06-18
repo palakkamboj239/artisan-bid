@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Profile – ArtisanBid{% endblock %}
+
+{% block content %}
+<div class="section-padding">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="profile-card">
+                    <div class="profile-header text-center">
+                        <div class="profile-avatar-wrapper">
+                            {% if profile_user.profile.profile_picture %}
+                                <img src="{{ profile_user.profile.profile_picture.url }}"
+                                     alt="{{ profile_user.username }}" class="profile-avatar" />
+                            {% else %}
+                                <img src="{% static 'images/artist-placeholder.svg' %}"
+                                     alt="{{ profile_user.username }}" class="profile-avatar" />
+                            {% endif %}
+                        </div>
+                        <h3 class="profile-name">{{ profile_user.get_full_name|default:profile_user.username }}</h3>
+                        <p class="profile-username text-muted">@{{ profile_user.username }}</p>
+                        <span class="profile-badge">{{ profile_user.profile.get_account_type_display|default:"Collector" }}</span>
+                    </div>
+
+                    <div class="profile-body mt-4">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="profile-info-item">
+                                    <small class="info-label">Email</small>
+                                    <p class="info-value">{{ profile_user.email }}</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="profile-info-item">
+                                    <small class="info-label">Member Since</small>
+                                    <p class="info-value">{{ profile_user.date_joined|date:"F j, Y" }}</p>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="profile-info-item">
+                                    <small class="info-label">Bio</small>
+                                    <p class="info-value">{{ profile_user.profile.bio|default:"No bio yet." }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-actions text-center mt-4 pt-3 border-top border-secondary">
+                        <a href="{% url 'users:edit_profile' %}" class="btn btn-gold">Edit Profile</a>
+                        <a href="{% url 'users:dashboard' %}" class="btn btn-outline-gold ms-2">Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
